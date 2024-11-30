@@ -8,10 +8,15 @@ import { createToken } from "../../utils/verifyToken";
 import { USER_ROLE } from "../user/user.constant";
 import { User } from "../user/user.model";
 import { EmailHelper } from "../../utils/emailSender";
+import prisma from "../../config/prisma";
 
 const registerUser = async (payload: TRegisterUser) => {
   // checking if the user is exist
-  const user = await User.isUserExistsByEmail(payload?.email);
+  const user = await prisma.user.findUnique({
+    where: {
+      email: payload.email,
+    },
+  });
 
   if (user) {
     throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
@@ -20,16 +25,14 @@ const registerUser = async (payload: TRegisterUser) => {
   payload.role = USER_ROLE.USER;
 
   //create new user
-  const newUser = await User.create(payload);
+  const newUser = await prisma.user.create({ data: payload });
 
   //create token and sent to the  client
 
   const jwtPayload = {
-    _id: newUser._id,
+    id: newUser.id,
     name: newUser.name,
     email: newUser.email,
-    mobileNumber: newUser.mobileNumber,
-    profilePhoto: newUser.profilePhoto,
     role: newUser.role,
     status: newUser.status,
   };
@@ -58,8 +61,11 @@ const socialLoginUser = async (payload: {
   role?: string;
 }) => {
   // checking if the user is exist
-  const user = await User.isUserExistsByEmail(payload?.email);
-
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: payload.email,
+    },
+  });
   // checking if the user is blocked
 
   const userStatus = user?.status;
@@ -71,11 +77,9 @@ const socialLoginUser = async (payload: {
     //create token and sent to the  client
 
     const jwtPayload = {
-      _id: user._id,
+      id: user.id,
       name: user.name,
       email: user.email,
-      mobileNumber: user.mobileNumber,
-      profilePhoto: user.profilePhoto,
       role: user.role,
       status: user.status,
     };
@@ -100,17 +104,15 @@ const socialLoginUser = async (payload: {
 
   payload.role = USER_ROLE.USER;
 
-  //create new user
-  const newUser = await User.create(payload);
+  //!create new user
+  const newUser = await prisma.user.create({ data: payload });
 
   //create token and sent to the  client
 
   const jwtPayload = {
-    _id: newUser._id,
+    id: newUser.id,
     name: newUser.name,
     email: newUser.email,
-    mobileNumber: newUser.mobileNumber,
-    profilePhoto: newUser.profilePhoto,
     role: newUser.role,
     status: newUser.status,
   };
@@ -134,11 +136,11 @@ const socialLoginUser = async (payload: {
 };
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
-  const user = await User.isUserExistsByEmail(payload?.email);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is not found!");
-  }
+  const user = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: payload.email,
+    },
+  });
 
   // checking if the user is blocked
 
@@ -148,7 +150,7 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
 
-  //checking if the password is correct
+  //!checking if the password is correct
 
   if (!(await User.isPasswordMatched(payload?.password, user?.password)))
     throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
@@ -156,11 +158,9 @@ const loginUser = async (payload: TLoginUser) => {
   //create token and sent to the  client
 
   const jwtPayload = {
-    _id: user._id,
+    id: user.id,
     name: user.name,
     email: user.email,
-    mobileNumber: user.mobileNumber,
-    profilePhoto: user.profilePhoto,
     role: user.role,
     status: user.status,
   };
@@ -189,16 +189,7 @@ const resetPassword = async (
   newPassword: string
 ) => {
   // checking if the user is exist
-  const result = await User.findById(userId);
-  // checking if the user is exist
-  if (!result) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is not found!");
-  }
-  const user = await User.isUserExistsByEmail(result?.email);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is not found!");
-  }
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
   // checking if the user is blocked
   const userStatus = user?.status;
@@ -207,7 +198,7 @@ const resetPassword = async (
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
 
-  // //checking if the password is correct
+  //! checking if the password is correct
   if (!(await User.isPasswordMatched(oldPassword, user?.password)))
     throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
 
@@ -217,16 +208,16 @@ const resetPassword = async (
     Number(config.bcrypt_salt_rounds)
   );
 
-  await User.findOneAndUpdate(
-    {
+  await prisma.user.update({
+    where: {
       email: user.email,
       role: user.role,
     },
-    {
+    data: {
       password: newHashedPassword,
-      passwordChangedAt: new Date(),
-    }
-  );
+      // passwordChangedAt: new Date(),
+    },
+  });
 
   return null;
 };
@@ -241,11 +232,7 @@ const refreshToken = async (token: string) => {
   const { email, iat } = decoded;
 
   // checking if the user is exist
-  const user = await User.isUserExistsByEmail(email);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is not found!");
-  }
+  const user = await prisma.user.findFirstOrThrow({ where: { email } });
 
   // checking if the user is blocked
   const userStatus = user?.status;
@@ -253,7 +240,7 @@ const refreshToken = async (token: string) => {
   if (userStatus === "BLOCKED") {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
-
+  // !checking if the token is issued before the password changed
   if (
     user.passwordChangedAt &&
     User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, iat as number)
@@ -262,11 +249,9 @@ const refreshToken = async (token: string) => {
   }
 
   const jwtPayload = {
-    _id: user._id,
+    id: user.id,
     name: user.name,
     email: user.email,
-    mobileNumber: user.mobileNumber,
-    profilePhoto: user.profilePhoto,
     role: user.role,
     status: user.status,
   };
@@ -284,11 +269,8 @@ const refreshToken = async (token: string) => {
 
 const forgetPassword = async (email: string) => {
   // checking if the user is exist
-  const user = await User.findOne({ email });
+  const user = await prisma.user.findFirstOrThrow({ where: { email } });
 
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "This user is not found !");
-  }
   // checking if the user is blocked
   const userStatus = user?.status;
 
@@ -299,8 +281,6 @@ const forgetPassword = async (email: string) => {
   const jwtPayload = {
     name: user.name,
     email: user.email,
-    mobileNumber: user.mobileNumber,
-    profilePhoto: user.profilePhoto,
     role: user.role,
     status: user.status,
   };
@@ -310,7 +290,7 @@ const forgetPassword = async (email: string) => {
     "10m"
   );
 
-  const resetUILink = `${config.reset_pass_ui_link}?id=${user._id}&token=${resetToken} `;
+  const resetUILink = `${config.reset_pass_ui_link}?id=${user.id}&token=${resetToken} `;
 
   EmailHelper.sendEmail(user?.email, resetUILink);
   return null;

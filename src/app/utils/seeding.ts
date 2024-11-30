@@ -1,37 +1,32 @@
 import config from "../config";
-// import { USER_ROLE, USER_STATUS } from "../modules/User/user.constant";
-// import { User } from "../modules/User/user.model";
+import prisma from "../config/prisma";
+import { USER_ROLE, USER_STATUS } from "../modules/user/user.constant";
 
 export const seed = async () => {
   try {
-    //at first check if the admin exist of not
-    // const admin = await User.findOne({
-    //   role: USER_ROLE.ADMIN,
-    //   email: config.admin_email,
-    //   status: USER_STATUS.ACTIVE,
-    // });
-    // if (!admin) {
-    //   console.log("Seeding started...");
+    // at first check if the admin exist of not
+    const admin = await prisma.user.findFirstOrThrow({
+      where: {
+        role: USER_ROLE.ADMIN,
+        email: config.admin_email,
+        status: USER_STATUS.ACTIVE,
+      },
+    });
+    if (!admin) {
+      console.log("Seeding started...");
 
-    //   await User.create({
-    //     name: "Admin",
-    //     role: USER_ROLE.ADMIN,
-    //     email: config.admin_email,
-    //     password: config.admin_password,
-    //     mobileNumber: config.admin_mobile_number,
-    //     status: USER_STATUS.ACTIVE,
-    //     profilePhoto:
-    //       "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
-    //     bio: "",
-    //     dateOfBirth: "",
-    //     gender: "",
-    //     maritalStatus: "",
-    //     education: [],
-    //     socialMedia: [],
-    //   });
-    //   console.log("Admin created successfully...");
-    //   console.log("Seeding completed...");
-    // }
+      await prisma.user.create({
+        data: {
+          email: config.admin_email as string,
+          name: "Admin",
+          password: config.admin_password as string,
+          role: USER_ROLE.ADMIN,
+          status: USER_STATUS.ACTIVE,
+        },
+      });
+      console.log("Admin created successfully...");
+      console.log("Seeding completed...");
+    }
   } catch (error) {
     console.log("Error in seeding", error);
   }

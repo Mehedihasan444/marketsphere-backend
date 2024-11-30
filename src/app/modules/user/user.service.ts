@@ -1,51 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import httpStatus from "http-status";
-import { QueryBuilder } from "../../builder/QueryBuilder";
-import AppError from "../../errors/AppError";
 import { TImageFiles } from "../../interface/image.interface";
-import { UserSearchableFields } from "./user.constant";
 import { TUser } from "./user.interface";
 import { User } from "./user.model";
+import prisma from "../../config/prisma";
 
 const createUser = async (payload: TUser) => {
-  const user = await User.create(payload);
+  const user = await prisma.user.create({ data: payload });
 
   return user;
 };
-
+// ! Get all users from the database
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-  const users = new QueryBuilder(User.find(), query)
-    .fields()
-    .paginate()
-    .sort()
-    .filter()
-    .search(UserSearchableFields);
+  const users = await prisma.user.findMany({
+    where: query,
+    select: {
+      // Add fields you want to select here
+    },
+    orderBy: {
+      // Add sorting logic here
+    },
+    skip: query.skip as number | undefined,
+    take: query.take as number | undefined,
+  });
 
-  const result = await users.modelQuery;
+  const totalCount = await prisma.user.count({
+    where: query,
+  });
 
-  const countQuery = new QueryBuilder(User.find(), query).filter().search(UserSearchableFields);
-
-  const totalCount = await countQuery.modelQuery.countDocuments();
-
-
-  return{totalCount,users: result};
+  return { totalCount, users };
 };
 
 const getSingleUserFromDB = async (id: string) => {
-  const user = await User.findById(id);
+  const user = await prisma.user.findUniqueOrThrow({ where: { id } });
 
   return user;
 };
 
 const deleteUserFromDB = async (userId: string) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
   if (user.role === "ADMIN") {
     throw new Error("You can not delete an admin user");
   }
-  const result = await User.findByIdAndDelete(userId);
+  const result = await prisma.user.delete({ where: { id: userId } });
   return result;
 };
 const updateProfilePhoto = async (
@@ -61,11 +58,12 @@ const updateProfilePhoto = async (
   return result;
 };
 const updateUser = async (userId: string, payload: TUser) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "User not found");
-  }
-  const result = await User.findByIdAndUpdate(userId, payload, { new: true });
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+
+  const result = await prisma.user.update({
+    where: { id: userId },
+    data: payload,
+  });
   return result;
 };
 export const UserServices = {
