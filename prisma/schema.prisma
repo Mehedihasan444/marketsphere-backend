@@ -20,6 +20,8 @@ model User {
   password  String
   role      Role     @default(USER) // Default role is USER
   status    Status   @default(ACTIVE) // Default status is ACTIVE
+  needPasswordChange Boolean @default(true)
+  passwordChangedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

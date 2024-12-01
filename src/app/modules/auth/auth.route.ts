@@ -1,10 +1,11 @@
 import express from "express";
 import { AuthControllers } from "./auth.controller";
 import { AuthValidation } from "./auth.validation";
-import { USER_ROLE } from "../User/user.constant";
-
 import auth from "../../middlewares/auth";
-import validateRequest, { validateRequestCookies } from "../../middlewares/validateRequest ";
+import validateRequest, {
+  validateRequestCookies,
+} from "../../middlewares/validateRequest ";
+import { USER_ROLE } from "../user/user.constant";
 
 const router = express.Router();
 
@@ -19,15 +20,10 @@ router.post(
   validateRequest(AuthValidation.loginValidationSchema),
   AuthControllers.loginUser
 );
-router.post(
-  "/social-login",
-  validateRequest(AuthValidation.socialLoginValidationSchema),
-  AuthControllers.socialLoginUser
-);
 
 router.post(
   "/reset-password",
-  auth(USER_ROLE.BUYER, USER_ROLE.ADMIN,USER_ROLE.SELLER),
+  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword
 );

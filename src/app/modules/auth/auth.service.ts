@@ -6,9 +6,9 @@ import AppError from "../../errors/AppError";
 import { TLoginUser, TRegisterUser } from "./auth.interface";
 import { createToken } from "../../utils/verifyToken";
 import { USER_ROLE } from "../user/user.constant";
-import { User } from "../user/user.model";
 import { EmailHelper } from "../../utils/emailSender";
 import prisma from "../../config/prisma";
+import { isJWTIssuedBeforePasswordChanged } from "../../utils/isJWTIssuedBeforePasswordChanged";
 
 const registerUser = async (payload: TRegisterUser) => {
   // checking if the user is exist
@@ -54,86 +54,7 @@ const registerUser = async (payload: TRegisterUser) => {
     refreshToken,
   };
 };
-const socialLoginUser = async (payload: {
-  name: string;
-  email: string;
-  profilePhoto: string;
-  role?: string;
-}) => {
-  // checking if the user is exist
-  const user = await prisma.user.findUniqueOrThrow({
-    where: {
-      email: payload.email,
-    },
-  });
-  // checking if the user is blocked
 
-  const userStatus = user?.status;
-
-  if (userStatus === "BLOCKED") {
-    throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
-  }
-  if (user) {
-    //create token and sent to the  client
-
-    const jwtPayload = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-    };
-
-    const accessToken = createToken(
-      jwtPayload,
-      config.jwt_access_secret as string,
-      config.jwt_access_expires_in as string
-    );
-
-    const refreshToken = createToken(
-      jwtPayload,
-      config.jwt_refresh_secret as string,
-      config.jwt_refresh_expires_in as string
-    );
-
-    return {
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  payload.role = USER_ROLE.USER;
-
-  //!create new user
-  const newUser = await prisma.user.create({ data: payload });
-
-  //create token and sent to the  client
-
-  const jwtPayload = {
-    id: newUser.id,
-    name: newUser.name,
-    email: newUser.email,
-    role: newUser.role,
-    status: newUser.status,
-  };
-
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
-  );
-
-  const refreshToken = createToken(
-    jwtPayload,
-    config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string
-  );
-
-  return {
-    accessToken,
-    refreshToken,
-  };
-};
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
   const user = await prisma.user.findUniqueOrThrow({
@@ -150,9 +71,7 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
 
-  //!checking if the password is correct
-
-  if (!(await User.isPasswordMatched(payload?.password, user?.password)))
+  if (!(await bcrypt.compare(payload.password, user.password)))
     throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
 
   //create token and sent to the  client
@@ -198,8 +117,7 @@ const resetPassword = async (
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
 
-  //! checking if the password is correct
-  if (!(await User.isPasswordMatched(oldPassword, user?.password)))
+  if (!(await bcrypt.compare(oldPassword, user.password)))
     throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
 
   //hash new password
@@ -215,7 +133,7 @@ const resetPassword = async (
     },
     data: {
       password: newHashedPassword,
-      // passwordChangedAt: new Date(),
+      passwordChangedAt: new Date(),
     },
   });
 
@@ -240,10 +158,10 @@ const refreshToken = async (token: string) => {
   if (userStatus === "BLOCKED") {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
-  // !checking if the token is issued before the password changed
+  // checking if the token is issued before the password changed
   if (
     user.passwordChangedAt &&
-    User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, iat as number)
+    isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, iat as number)
   ) {
     throw new AppError(httpStatus.UNAUTHORIZED, "You are not authorized !");
   }
@@ -300,6 +218,5 @@ export const AuthServices = {
   loginUser,
   resetPassword,
   refreshToken,
-  socialLoginUser,
   forgetPassword,
 };

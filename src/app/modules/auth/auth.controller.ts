@@ -45,26 +45,7 @@ const loginUser = catchAsync(async (req, res) => {
     },
   });
 });
-const socialLoginUser = catchAsync(async (req, res) => {
-  const result = await AuthServices.socialLoginUser(req.body);
-  const { refreshToken, accessToken } = result;
 
-  res.cookie("refreshToken", refreshToken, {
-    secure: config.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: true,
-  });
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User registered in successfully!",
-    data: {
-      accessToken,
-      refreshToken,
-    },
-  });
-});
 const resetPassword = catchAsync(async (req, res) => {
   const { userId, oldPassword, newPassword } = req.body;
 
@@ -108,6 +89,5 @@ export const AuthControllers = {
   loginUser,
   resetPassword,
   refreshToken,
-  socialLoginUser,
   forgetPassword,
 };

@@ -15,3 +15,10 @@ export const UserSearchableFields = [
   "role",
   "status",
 ];
+
+export const userFilterableFields: string[] = [
+  'email',
+  'role',
+  'status',
+  'searchTerm'
+]; // for all filtering 

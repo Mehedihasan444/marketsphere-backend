@@ -1,40 +1,27 @@
-import express, { Request, Response, Application, NextFunction } from "express";
-import cookieParser from "cookie-parser";
+import express, { Application, Request, Response } from "express";
 import cors from "cors";
-import status from "http-status";
 import router from "./app/routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import cookieParser from "cookie-parser";
 import notFound from "./app/middlewares/notFound";
 
 const app: Application = express();
+app.use(cors());
+app.use(cookieParser());
 
-//parsers
+//parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cookieParser());
-app.use(
-  cors({
-    credentials: true,
-    origin: ["http://localhost:5173"],
-  })
-);
-
-// application routes
-app.use("/api/v1", router);
-
 app.get("/", (req: Request, res: Response) => {
-  res.send("Campers shop is running");
-});
-//Testing
-app.get("/", (req: Request, res: Response) => {
-  res.status(status.OK).json({
-    success: true,
-    message: "Welcome to the Campers shop API",
+  res.send({
+    Message: "Server is running..",
   });
 });
-app.use(globalErrorHandler);
 
-// Not Found
+app.use("/api/v1", router);
+
+app.use(globalErrorHandler);
 app.use(notFound);
+
 export default app;

@@ -17,6 +17,7 @@ const userRegister = catchAsync(async (req, res) => {
 });
 
 const getAllUsers = catchAsync(async (req, res) => {
+
   const users = await UserServices.getAllUsersFromDB(req.query);
 
   sendResponse(res, {
@@ -48,19 +49,7 @@ const deleteUser = catchAsync(async (req, res) => {
     data: null,
   });
 });
-const updateProfilePhoto = catchAsync(async (req, res) => {
-  if (!req.files) {
-    throw new AppError(400, "No profile picture found");
-  }
-  await UserServices.updateProfilePhoto(req.body, req.files as TImageFiles);
 
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "Profile picture updated successfully",
-    data: null,
-  });
-});
 const updateUser = catchAsync(async (req, res) => {
  
   const result = await UserServices.updateUser(req.params.id,req.body);
@@ -78,6 +67,5 @@ export const UserControllers = {
   userRegister,
   getAllUsers,
   deleteUser,
-  updateProfilePhoto,
   updateUser
 };
