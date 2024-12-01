@@ -19,10 +19,10 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../../config"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const verifyToken_1 = require("../../utils/verifyToken");
-const user_constant_1 = require("../user/user.constant");
 const emailSender_1 = require("../../utils/emailSender");
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const isJWTIssuedBeforePasswordChanged_1 = require("../../utils/isJWTIssuedBeforePasswordChanged");
+const client_1 = require("@prisma/client");
 const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // checking if the user is exist
     const user = yield prisma_1.default.user.findUnique({
@@ -33,7 +33,7 @@ const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* ()
     if (user) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "This user is already exist!");
     }
-    payload.role = user_constant_1.USER_ROLE.USER;
+    payload.role = client_1.Role.CUSTOMER;
     //create new user
     const newUser = yield prisma_1.default.user.create({ data: payload });
     //create token and sent to the  client
@@ -151,10 +151,36 @@ const forgetPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
     emailSender_1.EmailHelper.sendEmail(user === null || user === void 0 ? void 0 : user.email, resetUILink);
     return null;
 });
+const changePassword = (user, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const userData = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            email: user.email,
+            status: client_1.UserStatus.ACTIVE,
+        },
+    });
+    const isCorrectPassword = yield bcryptjs_1.default.compare(payload.oldPassword, userData.password);
+    if (!isCorrectPassword) {
+        throw new Error("Password incorrect!");
+    }
+    const hashedPassword = yield bcryptjs_1.default.hash(payload.newPassword, 12);
+    yield prisma_1.default.user.update({
+        where: {
+            email: userData.email,
+        },
+        data: {
+            password: hashedPassword,
+            needPasswordChange: false,
+        },
+    });
+    return {
+        message: "Password changed successfully!",
+    };
+});
 exports.AuthServices = {
     registerUser,
     loginUser,
     resetPassword,
     refreshToken,
     forgetPassword,
+    changePassword,
 };

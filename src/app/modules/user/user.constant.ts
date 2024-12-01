@@ -1,11 +1,13 @@
 export const USER_ROLE = {
   ADMIN: "ADMIN",
-  USER: "USER",
+  CUSTOMER: "CUSTOMER",
+  VENDOR: "VENDOR",
 } as const;
 
 export const USER_STATUS = {
   ACTIVE: "ACTIVE",
   BLOCKED: "BLOCKED",
+  DELETED: "DELETED",
 } as const;
 
 export const UserSearchableFields = [
@@ -17,8 +19,8 @@ export const UserSearchableFields = [
 ];
 
 export const userFilterableFields: string[] = [
-  'email',
-  'role',
-  'status',
-  'searchTerm'
-]; // for all filtering 
+  "email",
+  "role",
+  "status",
+  "searchTerm",
+]; // for all filtering

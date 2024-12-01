@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userFilterableFields = exports.UserSearchableFields = exports.USER_STATUS = exports.USER_ROLE = void 0;
 exports.USER_ROLE = {
     ADMIN: "ADMIN",
-    USER: "USER",
+    CUSTOMER: "CUSTOMER",
+    VENDOR: "VENDOR",
 };
 exports.USER_STATUS = {
     ACTIVE: "ACTIVE",
     BLOCKED: "BLOCKED",
+    DELETED: "DELETED",
 };
 exports.UserSearchableFields = [
     "name",
@@ -17,8 +19,8 @@ exports.UserSearchableFields = [
     "status",
 ];
 exports.userFilterableFields = [
-    'email',
-    'role',
-    'status',
-    'searchTerm'
-]; // for all filtering 
+    "email",
+    "role",
+    "status",
+    "searchTerm",
+]; // for all filtering

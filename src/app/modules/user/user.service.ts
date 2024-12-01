@@ -1,13 +1,78 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from "../../config/prisma";
-import { Prisma, User } from "@prisma/client";
+import { Admin, Customer, Prisma, Role, User, Vendor } from "@prisma/client";
 import { UserSearchableFields } from "./user.constant";
 import QueryBuilder from "../../queryBuilder";
+import bcrypt from "bcryptjs";
+const createAdmin = async (payload: User) => {
+  const hashedPassword = await bcrypt.hash(payload.password, 12);
 
-const createUser = async (payload: User) => {
-  const user = await prisma.user.create({ data: payload });
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const user = await transactionClient.user.create({
+      data: {
+        ...payload,
+        password: hashedPassword,
+        role: Role.ADMIN,
+      },
+    });
+    const admin = await transactionClient.admin.create({
+      data: {
+        userId: user.id,
+      },
+    });
+    return admin;
+  });
 
-  return user;
+  return result;
+};
+
+const createCustomer = async (payload: User & Customer) => {
+  const hashedPassword = await bcrypt.hash(payload.password, 12);
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const user = await transactionClient.user.create({
+      data: {
+        ...payload,
+        password: hashedPassword,
+        role: Role.CUSTOMER,
+      },
+    });
+    const customer = await transactionClient.customer.create({
+      data: {
+        userId: user.id,
+        phone: payload.phone,
+        address: payload.address,
+      },
+    });
+    return customer;
+  });
+
+  return result;
+};
+const createVendor = async (payload: User & Vendor) => {
+  const hashedPassword = await bcrypt.hash(payload.password, 12);
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    const user = await transactionClient.user.create({
+      data: {
+        ...payload,
+        password: hashedPassword,
+        role: Role.CUSTOMER,
+      },
+    });
+    const vendor = await transactionClient.vendor.create({
+      data: {
+        userId: user.id,
+        name: payload.name,
+        shopName: payload.shopName,
+        shopLogo: payload.shopLogo,
+        description: payload.description,
+      },
+    });
+    return vendor;
+  });
+
+  return result;
 };
 //  Get all users from the database
 // const getAllUsersFromDB = async (params: any, options: any) => {
@@ -146,7 +211,9 @@ const updateUser = async (userId: string, payload: User) => {
   return result;
 };
 export const UserServices = {
-  createUser,
+  createAdmin,
+  createCustomer,
+  createVendor,
   getAllUsersFromDB,
   getSingleUserFromDB,
   deleteUserFromDB,

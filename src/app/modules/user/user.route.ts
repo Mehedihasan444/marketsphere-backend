@@ -10,13 +10,23 @@ const router = express.Router();
 export const UserRoutes = router;
 
 router.post(
-  "/create-user",
+  "/create-admin",
   auth(USER_ROLE.ADMIN),
   validateRequest(UserValidation.createUserValidationSchema),
-  UserControllers.userRegister
+  UserControllers.createAdmin
+);
+router.post(
+  "/create-vendor",
+  auth(USER_ROLE.ADMIN),
+  validateRequest(UserValidation.createUserValidationSchema),
+  UserControllers.createVendor
+);
+router.post(
+  "/create-customer",
+  validateRequest(UserValidation.createUserValidationSchema),
+  UserControllers.createCustomer
 );
 router.get("/", auth(USER_ROLE.ADMIN), UserControllers.getAllUsers);
-
 router.put("/:id", auth(USER_ROLE.ADMIN), UserControllers.updateUser);
 router.get("/:id", UserControllers.getSingleUser);
 router.delete("/:id", auth(USER_ROLE.ADMIN), UserControllers.deleteUser);

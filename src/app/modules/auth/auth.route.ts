@@ -23,11 +23,15 @@ router.post(
 
 router.post(
   "/reset-password",
-  auth(USER_ROLE.USER, USER_ROLE.ADMIN),
+  auth(USER_ROLE.CUSTOMER, USER_ROLE.ADMIN, USER_ROLE.VENDOR),
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword
 );
-
+router.post(
+  "/change-password",
+  auth(USER_ROLE.ADMIN, USER_ROLE.CUSTOMER, USER_ROLE.VENDOR),
+  AuthControllers.changePassword
+);
 router.post(
   "/refresh-token",
   validateRequestCookies(AuthValidation.refreshTokenValidationSchema),

@@ -1,18 +1,36 @@
 import httpStatus from "http-status";
 import sendResponse from "../../utils/sendResponse";
-import AppError from "../../errors/AppError";
 import catchAsync from "../../utils/catchAsync";
 import { UserServices } from "./user.service";
-import { TImageFiles } from "../../interface/image.interface";
 
-const userRegister = catchAsync(async (req, res) => {
-  const user = await UserServices.createUser(req.body);
+const createAdmin = catchAsync(async (req, res) => {
+  const admin = await UserServices.createAdmin(req.body);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: "User Created Successfully",
-    data: user,
+    message: "Admin Created Successfully",
+    data: admin,
+  });
+});
+const createVendor = catchAsync(async (req, res) => {
+  const vendor = await UserServices.createVendor(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Vendor Created Successfully",
+    data: vendor,
+  });
+});
+const createCustomer = catchAsync(async (req, res) => {
+  const customer = await UserServices.createCustomer(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Customer Created Successfully",
+    data: customer,
   });
 });
 
@@ -63,8 +81,10 @@ const updateUser = catchAsync(async (req, res) => {
 });
 
 export const UserControllers = {
+  createAdmin,
+  createVendor,
+  createCustomer,
   getSingleUser,
-  userRegister,
   getAllUsers,
   deleteUser,
   updateUser

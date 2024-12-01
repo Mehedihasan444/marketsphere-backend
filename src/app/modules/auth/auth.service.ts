@@ -3,13 +3,12 @@ import httpStatus from "http-status";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../../config";
 import AppError from "../../errors/AppError";
-import { TLoginUser, TRegisterUser } from "./auth.interface";
+import { TLoginUser } from "./auth.interface";
 import { createToken } from "../../utils/verifyToken";
-import { USER_ROLE } from "../user/user.constant";
 import { EmailHelper } from "../../utils/emailSender";
 import prisma from "../../config/prisma";
 import { isJWTIssuedBeforePasswordChanged } from "../../utils/isJWTIssuedBeforePasswordChanged";
-import { User } from "@prisma/client";
+import { Role, User, UserStatus } from "@prisma/client";
 
 const registerUser = async (payload: User) => {
   // checking if the user is exist
@@ -23,7 +22,7 @@ const registerUser = async (payload: User) => {
     throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
   }
 
-  payload.role = USER_ROLE.USER;
+  payload.role = Role.CUSTOMER;
 
   //create new user
   const newUser = await prisma.user.create({ data: payload });
@@ -214,10 +213,44 @@ const forgetPassword = async (email: string) => {
   EmailHelper.sendEmail(user?.email, resetUILink);
   return null;
 };
+const changePassword = async (user: any, payload: any) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const isCorrectPassword: boolean = await bcrypt.compare(
+    payload.oldPassword,
+    userData.password
+  );
+
+  if (!isCorrectPassword) {
+    throw new Error("Password incorrect!");
+  }
+
+  const hashedPassword: string = await bcrypt.hash(payload.newPassword, 12);
+
+  await prisma.user.update({
+    where: {
+      email: userData.email,
+    },
+    data: {
+      password: hashedPassword,
+      needPasswordChange: false,
+    },
+  });
+
+  return {
+    message: "Password changed successfully!",
+  };
+};
 export const AuthServices = {
   registerUser,
   loginUser,
   resetPassword,
   refreshToken,
   forgetPassword,
+  changePassword,
 };

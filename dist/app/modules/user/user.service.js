@@ -26,11 +26,60 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const prisma_1 = __importDefault(require("../../config/prisma"));
+const client_1 = require("@prisma/client");
 const user_constant_1 = require("./user.constant");
 const queryBuilder_1 = __importDefault(require("../../queryBuilder"));
-const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield prisma_1.default.user.create({ data: payload });
-    return user;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const createAdmin = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
+    const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const user = yield transactionClient.user.create({
+            data: Object.assign(Object.assign({}, payload), { password: hashedPassword, role: client_1.Role.ADMIN }),
+        });
+        const admin = yield transactionClient.admin.create({
+            data: {
+                userId: user.id,
+            },
+        });
+        return admin;
+    }));
+    return result;
+});
+const createCustomer = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
+    const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const user = yield transactionClient.user.create({
+            data: Object.assign(Object.assign({}, payload), { password: hashedPassword, role: client_1.Role.CUSTOMER }),
+        });
+        const customer = yield transactionClient.customer.create({
+            data: {
+                userId: user.id,
+                phone: payload.phone,
+                address: payload.address,
+            },
+        });
+        return customer;
+    }));
+    return result;
+});
+const createVendor = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
+    const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const user = yield transactionClient.user.create({
+            data: Object.assign(Object.assign({}, payload), { password: hashedPassword, role: client_1.Role.CUSTOMER }),
+        });
+        const vendor = yield transactionClient.vendor.create({
+            data: {
+                userId: user.id,
+                name: payload.name,
+                shopName: payload.shopName,
+                shopLogo: payload.shopLogo,
+                description: payload.description,
+            },
+        });
+        return vendor;
+    }));
+    return result;
 });
 //  Get all users from the database
 // const getAllUsersFromDB = async (params: any, options: any) => {
@@ -141,7 +190,9 @@ const updateUser = (userId, payload) => __awaiter(void 0, void 0, void 0, functi
     return result;
 });
 exports.UserServices = {
-    createUser,
+    createAdmin,
+    createCustomer,
+    createVendor,
     getAllUsersFromDB,
     getSingleUserFromDB,
     deleteUserFromDB,
