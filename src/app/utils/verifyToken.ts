@@ -2,7 +2,7 @@
 
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import AppError from '../errors/AppError';
-import { USER_ROLE, USER_STATUS } from '../modules/user/user.constant';
+import { Role, UserStatus } from '@prisma/client';
 
 
 export const createToken = (
@@ -11,8 +11,8 @@ export const createToken = (
     name: string;
     email: string;
     mobileNumber?: string;
-    role: keyof typeof USER_ROLE;
-    status: keyof typeof USER_STATUS;
+    role: Role;
+    status: UserStatus;
   },
   secret: string,
   expiresIn: string

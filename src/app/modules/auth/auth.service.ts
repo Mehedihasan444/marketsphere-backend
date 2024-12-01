@@ -9,8 +9,9 @@ import { USER_ROLE } from "../user/user.constant";
 import { EmailHelper } from "../../utils/emailSender";
 import prisma from "../../config/prisma";
 import { isJWTIssuedBeforePasswordChanged } from "../../utils/isJWTIssuedBeforePasswordChanged";
+import { User } from "@prisma/client";
 
-const registerUser = async (payload: TRegisterUser) => {
+const registerUser = async (payload: User) => {
   // checking if the user is exist
   const user = await prisma.user.findUnique({
     where: {

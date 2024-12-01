@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,26 +8,241 @@ datasource db {
 }
 
 model User {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  name               String
+  password           String
+  role               Role       @default(USER) // Default role is USER
+  status             UserStatus @default(ACTIVE) // Default status is ACTIVE
+  needPasswordChange Boolean    @default(true)
+  passwordChangedAt  DateTime?
+  isDeleted          Boolean    @default(false)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  vendor             Vendor[]
+  admin              Admin[]
+  customer           Customer[]
+  cart               Cart[]
+  follow             Follow[]
+  order              Order[]
+  review             Review[]
+
+  @@map("users")
+}
+
+model Vendor {
+  id          String    @id @default(uuid())
+  name        String
+  shopName    String
+  shopLogo    String
+  description String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product[]
+  follow      Follow[]
+
+  @@map("vendors")
+}
+
+model Admin {
   id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(USER) // Default role is USER
-  status    Status   @default(ACTIVE) // Default status is ACTIVE
-  needPasswordChange Boolean @default(true)
-  passwordChangedAt DateTime?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("users")
+  @@map("admins")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String
+  address   String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  image       String?
+  isDeleted   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  images      String[]
+  discount    Float
+  quantity    Int
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  vendorId    String
+  vendor      Vendor      @relation(fields: [vendorId], references: [id])
+  isDeleted   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  cart        Cart[]
+  order       Order[]
+  cartItem    CartItem[]
+  flashSale   FlashSale[]
+  orderItem   OrderItem[]
+  review      Review[]
+
+  @@map("products")
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  productId String
+  product   Product    @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  cartItem  CartItem[]
+
+  @@map("carts")
+}
+
+model Follow {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("follows")
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  quantity    Int
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  isDeleted   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  coupon      Coupon[]
+  orderItem   OrderItem[]
+  product     Product?    @relation(fields: [productId], references: [id])
+  productId   String?
+
+  @@map("orders")
+}
+
+model Coupon {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  discount   Float
+  expiryDate DateTime
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cartItems")
+}
+
+model FlashSale {
+  id            String   @id @default(uuid())
+  name          String
+  description   String
+  image         String
+  discount      Float
+  startDateTime DateTime
+  endDateTime   DateTime
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  isDeleted     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("flashSales")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orderItems")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Float
+  comment   String
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 enum Role {
   ADMIN
   USER
+  VENDOR
+  CUSTOMER
 }
 
-enum Status {
+enum UserStatus {
   ACTIVE
   BLOCKED
+  DELETED
+  SUSPENDED
+}
+
+enum OrderStatus {
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+  SHIPPED
+  PENDING
 }
