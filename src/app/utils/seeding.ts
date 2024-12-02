@@ -1,15 +1,15 @@
+import { Role, UserStatus } from "@prisma/client";
 import config from "../config";
 import prisma from "../config/prisma";
-import { USER_ROLE, USER_STATUS } from "../modules/user/user.constant";
 import bcrypt from "bcryptjs";
 export const seed = async () => {
   try {
     // at first check if the admin exist of not
     const admin = await prisma.user.findFirst({
       where: {
-        role: USER_ROLE.ADMIN,
+        role: Role.ADMIN,
         email: config.admin_email,
-        status: USER_STATUS.ACTIVE,
+        status: UserStatus.ACTIVE,
       },
     });
     if (!admin) {
@@ -26,8 +26,8 @@ export const seed = async () => {
             email: config.admin_email as string,
             name: "Admin",
             password: hashedPassword,
-            role: USER_ROLE.ADMIN,
-            status: USER_STATUS.ACTIVE,
+            role: Role.ADMIN,
+            status: UserStatus.ACTIVE,
           },
         });
         const admin = await transactionClient.admin.create({

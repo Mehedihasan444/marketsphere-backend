@@ -5,7 +5,7 @@ import auth from "../../middlewares/auth";
 import validateRequest, {
   validateRequestCookies,
 } from "../../middlewares/validateRequest ";
-import { USER_ROLE } from "../user/user.constant";
+import { Role } from "@prisma/client";
 
 const router = express.Router();
 
@@ -23,13 +23,13 @@ router.post(
 
 router.post(
   "/reset-password",
-  auth(USER_ROLE.CUSTOMER, USER_ROLE.ADMIN, USER_ROLE.VENDOR),
+  auth(Role.CUSTOMER, Role.ADMIN, Role.VENDOR),
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthControllers.resetPassword
 );
 router.post(
   "/change-password",
-  auth(USER_ROLE.ADMIN, USER_ROLE.CUSTOMER, USER_ROLE.VENDOR),
+  auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
   AuthControllers.changePassword
 );
 router.post(

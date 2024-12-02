@@ -13,18 +13,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seed = void 0;
+const client_1 = require("@prisma/client");
 const config_1 = __importDefault(require("../config"));
 const prisma_1 = __importDefault(require("../config/prisma"));
-const user_constant_1 = require("../modules/user/user.constant");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const seed = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // at first check if the admin exist of not
         const admin = yield prisma_1.default.user.findFirst({
             where: {
-                role: user_constant_1.USER_ROLE.ADMIN,
+                role: client_1.Role.ADMIN,
                 email: config_1.default.admin_email,
-                status: user_constant_1.USER_STATUS.ACTIVE,
+                status: client_1.UserStatus.ACTIVE,
             },
         });
         if (!admin) {
@@ -38,8 +38,8 @@ const seed = () => __awaiter(void 0, void 0, void 0, function* () {
                         email: config_1.default.admin_email,
                         name: "Admin",
                         password: hashedPassword,
-                        role: user_constant_1.USER_ROLE.ADMIN,
-                        status: user_constant_1.USER_STATUS.ACTIVE,
+                        role: client_1.Role.ADMIN,
+                        status: client_1.UserStatus.ACTIVE,
                     },
                 });
                 const admin = yield transactionClient.admin.create({

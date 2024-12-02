@@ -5,11 +5,11 @@ import AppError from "../errors/AppError";
 import { verifyToken } from "../utils/verifyToken";
 import catchAsync from "../utils/catchAsync";
 import httpStatus from "http-status";
-import { USER_ROLE } from "../modules/user/user.constant";
 import prisma from "../config/prisma";
 import { isJWTIssuedBeforePasswordChanged } from "../utils/isJWTIssuedBeforePasswordChanged";
+import { Role } from "@prisma/client";
 
-const auth = (...requiredRoles: (keyof typeof USER_ROLE)[]) => {
+const auth = (...requiredRoles: Role[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
 

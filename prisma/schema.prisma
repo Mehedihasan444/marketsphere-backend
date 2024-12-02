@@ -244,6 +244,7 @@ model Review {
 
 enum Role {
   ADMIN
+  SUPER_ADMIN
   VENDOR
   CUSTOMER
 }
