@@ -31,20 +31,40 @@ model User {
 }
 
 model Vendor {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
   shopName    String
   shopLogo    String
   description String
-  userId      String    @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isDeleted   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  products    Product[]
-  followers   Follow[]
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Shop        Shop[]
 
   @@map("vendors")
+}
+
+model Shop {
+  id          String     @id @default(uuid())
+  name        String
+  description String
+  logo        String
+  banner      String?
+  vendorId    String     @unique
+  status      ShopStatus @default(PENDING)
+  isActive    Boolean    @default(true)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  vendor      Vendor     @relation(fields: [vendorId], references: [id])
+  categories  Category[] // Categories related to this shop
+  products    Product[] // Products available in this shop
+  followers   Follow[]
+  reviews     Review[]
+
+  @@map("shops")
 }
 
 model Admin {
@@ -80,6 +100,8 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   products    Product[]
+  Shop        Shop?     @relation(fields: [shopId], references: [id])
+  shopId      String?
 
   @@map("categories")
 }
@@ -94,8 +116,8 @@ model Product {
   quantity    Int
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  vendorId    String
-  vendor      Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  shopId      String
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -122,8 +144,8 @@ model Follow {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vendorId  String
-  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -214,6 +236,8 @@ model Review {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Shop      Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String?
 
   @@map("reviews")
 }
@@ -237,4 +261,10 @@ enum OrderStatus {
   CANCELLED
   SHIPPED
   PENDING
+}
+
+enum ShopStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
