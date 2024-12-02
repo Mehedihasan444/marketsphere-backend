@@ -34,8 +34,21 @@ const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* ()
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "This user is already exist!");
     }
     payload.role = client_1.Role.CUSTOMER;
+    //hash password
+    const hashedPassword = yield bcryptjs_1.default.hash(payload.password, Number(config_1.default.bcrypt_salt_rounds));
+    payload.password = hashedPassword;
     //create new user
-    const newUser = yield prisma_1.default.user.create({ data: payload });
+    const newUser = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const user = yield transactionClient.user.create({
+            data: Object.assign({}, payload),
+        });
+        yield transactionClient.customer.create({
+            data: {
+                userId: user.id,
+            },
+        });
+        return user;
+    }));
     //create token and sent to the  client
     const jwtPayload = {
         id: newUser.id,

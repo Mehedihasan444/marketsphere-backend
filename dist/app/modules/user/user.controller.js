@@ -17,6 +17,8 @@ const http_status_1 = __importDefault(require("http-status"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const user_service_1 = require("./user.service");
+const pick_1 = __importDefault(require("../../utils/pick"));
+const user_constant_1 = require("./user.constant");
 const createAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const admin = yield user_service_1.UserServices.createAdmin(req.body);
     (0, sendResponse_1.default)(res, {
@@ -45,7 +47,10 @@ const createCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     });
 }));
 const getAllUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield user_service_1.UserServices.getAllUsersFromDB(req.query);
+    const filters = (0, pick_1.default)(req.query, user_constant_1.userFilterableFields);
+    const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+    console.log(options);
+    const users = yield user_service_1.UserServices.getAllUsersFromDB(filters, options);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -88,5 +93,5 @@ exports.UserControllers = {
     getSingleUser,
     getAllUsers,
     deleteUser,
-    updateUser
+    updateUser,
 };

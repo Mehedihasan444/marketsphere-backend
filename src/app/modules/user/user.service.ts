@@ -2,8 +2,8 @@
 import prisma from "../../config/prisma";
 import { Admin, Customer, Prisma, Role, User, Vendor } from "@prisma/client";
 import { UserSearchableFields } from "./user.constant";
-import QueryBuilder from "../../queryBuilder";
 import bcrypt from "bcryptjs";
+import { paginationHelper } from "../../utils/paginationHelper";
 const createAdmin = async (payload: User) => {
   const hashedPassword = await bcrypt.hash(payload.password, 12);
 
@@ -40,8 +40,8 @@ const createCustomer = async (payload: User & Customer) => {
     const customer = await transactionClient.customer.create({
       data: {
         userId: user.id,
-        phone: payload.phone,
-        address: payload.address,
+        // phone: payload.phone,
+        // address: payload.address,
       },
     });
     return customer;
@@ -75,113 +75,71 @@ const createVendor = async (payload: User & Vendor) => {
   return result;
 };
 //  Get all users from the database
-// const getAllUsersFromDB = async (params: any, options: any) => {
-//   const { page, limit, skip, sortBy, sortOrder } = options;
-//   const { searchTerm,...filterData } = params;
-//   const andCondions: Prisma.UserWhereInput[] = [];
+const getAllUsersFromDB = async (params: any, options: any) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
 
-//   //console.log(filterData);
-//   if (params.searchTerm) {
-//       andCondions.push({
-//           OR: UserSearchableFields.map(field => ({
-//               [field]: {
-//                   contains: params.searchTerm,
-//                   mode: 'insensitive'
-//               }
-//           }))
-//       })
-//   };
+  const { searchTerm, ...filterData } = params;
+  const andCondions: Prisma.UserWhereInput[] = [];
 
-//   if (Object.keys(filterData).length > 0) {
-//       andCondions.push({
-//           AND: Object.keys(filterData).map(key => ({
-//               [key]: {
-//                   equals: (filterData as any)[key]
-//               }
-//           }))
-//       })
-//   };
-
-//   const whereConditons: Prisma.UserWhereInput = andCondions.length > 0 ? { AND: andCondions } : {};
-
-//   const result = await prisma.user.findMany({
-//       where: whereConditons,
-//       skip,
-//       take: limit,
-//       orderBy: options.sortBy && options.sortOrder ? {
-//           [options.sortBy]: options.sortOrder
-//       } : {
-//           createdAt: 'desc'
-//       },
-//       select: {
-//           id: true,
-//           email: true,
-//           role: true,
-//           needPasswordChange: true,
-//           status: true,
-//           createdAt: true,
-//           updatedAt: true,
-//           // admin: true,
-//       }
-//   });
-
-//   const total = await prisma.user.count({
-//       where: whereConditons
-//   });
-
-//   return {
-//       meta: {
-//           page,
-//           limit,
-//           total
-//       },
-//       data: result
-//   };
-
-// };
-const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-  const {
-    searchTerm,
-    page = 1,
-    limit = 10,
-    sortBy = "createdAt",
-    sortOrder = "desc",
-    ...filterData // Extract filter data (non-search-related filters)
-  } = query;
-
-  // Initialize QueryBuilder for the User model
-  const queryBuilder = new QueryBuilder<
-    Prisma.UserGetPayload<{}>,
-    Prisma.UserFindManyArgs
-  >(prisma.user);
-
-  // Apply search conditions
-  if (searchTerm) {
-    queryBuilder.search(UserSearchableFields, searchTerm as string);
+  if (params.searchTerm) {
+    andCondions.push({
+      OR: UserSearchableFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
   }
 
-  // Apply filters
   if (Object.keys(filterData).length > 0) {
-    queryBuilder.filter(filterData as Prisma.UserWhereInput);
+    andCondions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
   }
 
-  // Apply sorting and pagination
-  queryBuilder
-    .sort(sortBy as string, sortOrder as "asc" | "desc")
-    .paginate(page as number, limit as number);
+  const whereConditons: Prisma.UserWhereInput =
+    andCondions.length > 0 ? { AND: andCondions } : {};
 
-  // Execute query and count total results
-  const data = await queryBuilder.execute();
-  const total = await queryBuilder.count();
+  const result = await prisma.user.findMany({
+    where: whereConditons,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc",
+          },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      needPasswordChange: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      // admin: true,
+    },
+  });
 
-  // Return formatted response
+  const total = await prisma.user.count({
+    where: whereConditons,
+  });
+
   return {
     meta: {
       page,
       limit,
       total,
     },
-    data,
+    data: result,
   };
 };
 

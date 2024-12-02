@@ -1,11 +1,11 @@
 import config from "../config";
 import prisma from "../config/prisma";
 import { USER_ROLE, USER_STATUS } from "../modules/user/user.constant";
-
+import bcrypt from "bcryptjs";
 export const seed = async () => {
   try {
     // at first check if the admin exist of not
-    const admin = await prisma.user.findFirstOrThrow({
+    const admin = await prisma.user.findFirst({
       where: {
         role: USER_ROLE.ADMIN,
         email: config.admin_email,
@@ -14,16 +14,30 @@ export const seed = async () => {
     });
     if (!admin) {
       console.log("Seeding started...");
-
-      await prisma.user.create({
-        data: {
-          email: config.admin_email as string,
-          name: "Admin",
-          password: config.admin_password as string,
-          role: USER_ROLE.ADMIN,
-          status: USER_STATUS.ACTIVE,
-        },
+      //hash password
+      const hashedPassword = await bcrypt.hash(
+        config.admin_password as string,
+        Number(config.bcrypt_salt_rounds)
+      );
+      //create admin
+      await prisma.$transaction(async (transactionClient) => {
+        const user = await transactionClient.user.create({
+          data: {
+            email: config.admin_email as string,
+            name: "Admin",
+            password: hashedPassword,
+            role: USER_ROLE.ADMIN,
+            status: USER_STATUS.ACTIVE,
+          },
+        });
+        const admin = await transactionClient.admin.create({
+          data: {
+            userId: user.id,
+          },
+        });
+        return admin;
       });
+
       console.log("Admin created successfully...");
       console.log("Seeding completed...");
     }

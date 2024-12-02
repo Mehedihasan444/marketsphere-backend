@@ -12,20 +12,20 @@ model User {
   email              String     @unique
   name               String
   password           String
-  role               Role       @default(USER) // Default role is USER
-  status             UserStatus @default(ACTIVE) // Default status is ACTIVE
+  role               Role       @default(CUSTOMER)
+  status             UserStatus @default(ACTIVE)
   needPasswordChange Boolean    @default(true)
   passwordChangedAt  DateTime?
   isDeleted          Boolean    @default(false)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-  vendor             Vendor[]
-  admin              Admin[]
-  customer           Customer[]
+  admin              Admin?
+  customer           Customer?
+  vendor             Vendor?
   cart               Cart[]
-  follow             Follow[]
-  order              Order[]
-  review             Review[]
+  follows            Follow[]
+  orders             Order[]
+  reviews            Review[]
 
   @@map("users")
 }
@@ -36,20 +36,20 @@ model Vendor {
   shopName    String
   shopLogo    String
   description String
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   isDeleted   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  product     Product[]
-  follow      Follow[]
+  products    Product[]
+  followers   Follow[]
 
   @@map("vendors")
 }
 
 model Admin {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -60,10 +60,10 @@ model Admin {
 
 model Customer {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone     String
-  address   String
+  phone     String?  @default("")
+  address   String?  @default("")
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,7 +79,7 @@ model Category {
   isDeleted   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  product     Product[]
+  products    Product[]
 
   @@map("categories")
 }
@@ -93,18 +93,16 @@ model Product {
   discount    Float
   quantity    Int
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id])
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   vendorId    String
-  vendor      Vendor      @relation(fields: [vendorId], references: [id])
+  vendor      Vendor      @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  cart        Cart[]
-  order       Order[]
-  cartItem    CartItem[]
-  flashSale   FlashSale[]
-  orderItem   OrderItem[]
-  review      Review[]
+  cartItems   CartItem[]
+  flashSales  FlashSale[]
+  orderItems  OrderItem[]
+  reviews     Review[]
 
   @@map("products")
 }
@@ -112,13 +110,10 @@ model Product {
 model Cart {
   id        String     @id @default(uuid())
   userId    String
-  user      User       @relation(fields: [userId], references: [id])
-  productId String
-  product   Product    @relation(fields: [productId], references: [id])
-  quantity  Int
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
-  cartItem  CartItem[]
 
   @@map("carts")
 }
@@ -128,7 +123,7 @@ model Follow {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   vendorId  String
-  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -138,17 +133,15 @@ model Follow {
 model Order {
   id          String      @id @default(uuid())
   userId      String
-  user        User        @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   quantity    Int
   totalAmount Float
   status      OrderStatus @default(PENDING)
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  coupon      Coupon[]
-  orderItem   OrderItem[]
-  product     Product?    @relation(fields: [productId], references: [id])
-  productId   String?
+  orderItems  OrderItem[]
+  coupons     Coupon[]
 
   @@map("orders")
 }
@@ -159,7 +152,7 @@ model Coupon {
   discount   Float
   expiryDate DateTime
   orderId    String
-  order      Order    @relation(fields: [orderId], references: [id])
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -170,9 +163,9 @@ model Coupon {
 model CartItem {
   id        String   @id @default(uuid())
   cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id])
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -189,7 +182,7 @@ model FlashSale {
   startDateTime DateTime
   endDateTime   DateTime
   productId     String
-  product       Product  @relation(fields: [productId], references: [id])
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   isDeleted     Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -200,9 +193,9 @@ model FlashSale {
 model OrderItem {
   id        String   @id @default(uuid())
   orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -215,7 +208,7 @@ model Review {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   rating    Float
   comment   String
   isDeleted Boolean  @default(false)
@@ -227,7 +220,6 @@ model Review {
 
 enum Role {
   ADMIN
-  USER
   VENDOR
   CUSTOMER
 }

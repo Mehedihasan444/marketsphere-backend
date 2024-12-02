@@ -11,13 +11,7 @@ exports.USER_STATUS = {
     BLOCKED: "BLOCKED",
     DELETED: "DELETED",
 };
-exports.UserSearchableFields = [
-    "name",
-    "email",
-    "phone",
-    "role",
-    "status",
-];
+exports.UserSearchableFields = ["email"];
 exports.userFilterableFields = [
     "email",
     "role",

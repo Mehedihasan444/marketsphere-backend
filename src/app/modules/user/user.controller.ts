@@ -2,6 +2,8 @@ import httpStatus from "http-status";
 import sendResponse from "../../utils/sendResponse";
 import catchAsync from "../../utils/catchAsync";
 import { UserServices } from "./user.service";
+import pick from "../../utils/pick";
+import { userFilterableFields } from "./user.constant";
 
 const createAdmin = catchAsync(async (req, res) => {
   const admin = await UserServices.createAdmin(req.body);
@@ -36,7 +38,10 @@ const createCustomer = catchAsync(async (req, res) => {
 
 const getAllUsers = catchAsync(async (req, res) => {
 
-  const users = await UserServices.getAllUsersFromDB(req.query);
+  const filters = pick(req.query, userFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+console.log(options)
+  const users = await UserServices.getAllUsersFromDB(filters, options);
 
   sendResponse(res, {
     success: true,
@@ -69,8 +74,7 @@ const deleteUser = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
- 
-  const result = await UserServices.updateUser(req.params.id,req.body);
+  const result = await UserServices.updateUser(req.params.id, req.body);
 
   sendResponse(res, {
     success: true,
@@ -87,5 +91,5 @@ export const UserControllers = {
   getSingleUser,
   getAllUsers,
   deleteUser,
-  updateUser
+  updateUser,
 };

@@ -1,12 +1,21 @@
 import { Server } from "http";
 import app from "./app";
 import config from "./app/config";
+import { seed } from "./app/utils/seeding";
 
 async function main() {
-  const server: Server = app.listen(config.port, () => {
+  const server: Server = app.listen(config.port, async () => {
     console.log("Sever is running on port ", config.port);
+    // Call the seeding function
+    try {
+      await seed();
+      console.log("Database seeding completed!");
+    } catch (error) {
+      console.error("Database seeding failed:", error);
+    }
   });
 
+  
   const exitHandler = () => {
     if (server) {
       server.close(() => {
@@ -26,4 +35,7 @@ async function main() {
   });
 }
 
-main();
+main().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});

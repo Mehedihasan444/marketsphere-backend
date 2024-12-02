@@ -10,13 +10,7 @@ export const USER_STATUS = {
   DELETED: "DELETED",
 } as const;
 
-export const UserSearchableFields = [
-  "name",
-  "email",
-  "phone",
-  "role",
-  "status",
-];
+export const UserSearchableFields = ["email"];
 
 export const userFilterableFields: string[] = [
   "email",

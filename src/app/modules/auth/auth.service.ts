@@ -24,8 +24,27 @@ const registerUser = async (payload: User) => {
 
   payload.role = Role.CUSTOMER;
 
+  //hash password
+  const hashedPassword = await bcrypt.hash(
+    payload.password as string,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  payload.password = hashedPassword;
   //create new user
-  const newUser = await prisma.user.create({ data: payload });
+  const newUser = await prisma.$transaction(async (transactionClient) => {
+    const user = await transactionClient.user.create({
+      data: {
+        ...payload,
+      },
+    });
+   await transactionClient.customer.create({
+      data: {
+        userId: user.id,
+      },
+    });
+    return user;
+  });
 
   //create token and sent to the  client
 
@@ -70,7 +89,6 @@ const loginUser = async (payload: TLoginUser) => {
   if (userStatus === "BLOCKED") {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
-
   if (!(await bcrypt.compare(payload.password, user.password)))
     throw new AppError(httpStatus.FORBIDDEN, "Password do not matched");
 

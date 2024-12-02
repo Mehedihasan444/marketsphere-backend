@@ -28,8 +28,8 @@ exports.UserServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const client_1 = require("@prisma/client");
 const user_constant_1 = require("./user.constant");
-const queryBuilder_1 = __importDefault(require("../../queryBuilder"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const paginationHelper_1 = require("../../utils/paginationHelper");
 const createAdmin = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
     const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
@@ -54,8 +54,8 @@ const createCustomer = (payload) => __awaiter(void 0, void 0, void 0, function* 
         const customer = yield transactionClient.customer.create({
             data: {
                 userId: user.id,
-                phone: payload.phone,
-                address: payload.address,
+                // phone: payload.phone,
+                // address: payload.address,
             },
         });
         return customer;
@@ -82,91 +82,62 @@ const createVendor = (payload) => __awaiter(void 0, void 0, void 0, function* ()
     return result;
 });
 //  Get all users from the database
-// const getAllUsersFromDB = async (params: any, options: any) => {
-//   const { page, limit, skip, sortBy, sortOrder } = options;
-//   const { searchTerm,...filterData } = params;
-//   const andCondions: Prisma.UserWhereInput[] = [];
-//   //console.log(filterData);
-//   if (params.searchTerm) {
-//       andCondions.push({
-//           OR: UserSearchableFields.map(field => ({
-//               [field]: {
-//                   contains: params.searchTerm,
-//                   mode: 'insensitive'
-//               }
-//           }))
-//       })
-//   };
-//   if (Object.keys(filterData).length > 0) {
-//       andCondions.push({
-//           AND: Object.keys(filterData).map(key => ({
-//               [key]: {
-//                   equals: (filterData as any)[key]
-//               }
-//           }))
-//       })
-//   };
-//   const whereConditons: Prisma.UserWhereInput = andCondions.length > 0 ? { AND: andCondions } : {};
-//   const result = await prisma.user.findMany({
-//       where: whereConditons,
-//       skip,
-//       take: limit,
-//       orderBy: options.sortBy && options.sortOrder ? {
-//           [options.sortBy]: options.sortOrder
-//       } : {
-//           createdAt: 'desc'
-//       },
-//       select: {
-//           id: true,
-//           email: true,
-//           role: true,
-//           needPasswordChange: true,
-//           status: true,
-//           createdAt: true,
-//           updatedAt: true,
-//           // admin: true,
-//       }
-//   });
-//   const total = await prisma.user.count({
-//       where: whereConditons
-//   });
-//   return {
-//       meta: {
-//           page,
-//           limit,
-//           total
-//       },
-//       data: result
-//   };
-// };
-const getAllUsersFromDB = (query) => __awaiter(void 0, void 0, void 0, function* () {
-    const { searchTerm, page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" } = query, filterData = __rest(query, ["searchTerm", "page", "limit", "sortBy", "sortOrder"]) // Extract filter data (non-search-related filters)
-    ;
-    // Initialize QueryBuilder for the User model
-    const queryBuilder = new queryBuilder_1.default(prisma_1.default.user);
-    // Apply search conditions
-    if (searchTerm) {
-        queryBuilder.search(user_constant_1.UserSearchableFields, searchTerm);
+const getAllUsersFromDB = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
+    const { page, limit, skip } = paginationHelper_1.paginationHelper.calculatePagination(options);
+    const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
+    const andCondions = [];
+    if (params.searchTerm) {
+        andCondions.push({
+            OR: user_constant_1.UserSearchableFields.map((field) => ({
+                [field]: {
+                    contains: params.searchTerm,
+                    mode: "insensitive",
+                },
+            })),
+        });
     }
-    // Apply filters
     if (Object.keys(filterData).length > 0) {
-        queryBuilder.filter(filterData);
+        andCondions.push({
+            AND: Object.keys(filterData).map((key) => ({
+                [key]: {
+                    equals: filterData[key],
+                },
+            })),
+        });
     }
-    // Apply sorting and pagination
-    queryBuilder
-        .sort(sortBy, sortOrder)
-        .paginate(page, limit);
-    // Execute query and count total results
-    const data = yield queryBuilder.execute();
-    const total = yield queryBuilder.count();
-    // Return formatted response
+    const whereConditons = andCondions.length > 0 ? { AND: andCondions } : {};
+    const result = yield prisma_1.default.user.findMany({
+        where: whereConditons,
+        skip,
+        take: limit,
+        orderBy: options.sortBy && options.sortOrder
+            ? {
+                [options.sortBy]: options.sortOrder,
+            }
+            : {
+                createdAt: "desc",
+            },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            needPasswordChange: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            // admin: true,
+        },
+    });
+    const total = yield prisma_1.default.user.count({
+        where: whereConditons,
+    });
     return {
         meta: {
             page,
             limit,
             total,
         },
-        data,
+        data: result,
     };
 });
 const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
