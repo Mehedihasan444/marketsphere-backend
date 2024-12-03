@@ -1,4 +1,4 @@
-import { Cart, CartItem } from "@prisma/client";
+import {  CartItem } from "@prisma/client";
 import prisma from "../../config/prisma";
 
 const addToCart = async (payload: any) => {

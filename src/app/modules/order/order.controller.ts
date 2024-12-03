@@ -19,8 +19,8 @@ const createOrder = catchAsync(async (req, res) => {
 const getAllOrders = catchAsync(async (req, res) => {
   const filters = pick(req.query, OrderFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-
-  const orders = await OrderServices.getAllOrdersFromDB(filters, options);
+  const userEmail= req.user.email;
+  const orders = await OrderServices.getAllOrdersFromDB(filters, options,userEmail);
 
   sendResponse(res, {
     success: true,

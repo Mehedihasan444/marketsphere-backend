@@ -59,6 +59,7 @@ model Shop {
   products    Product[]
   followers   Follow[]
   reviews     Review[]
+  Order       Order[]
 
   @@map("shops")
 }
@@ -156,6 +157,8 @@ model Order {
   id          String      @id @default(uuid())
   customerId  String
   customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shopId      String
+  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
   quantity    Int
   totalAmount Float
   discount    Float       @default(0)
@@ -168,6 +171,19 @@ model Order {
   coupons     Coupon[]
 
   @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orderItems")
 }
 
 model Coupon {
@@ -212,19 +228,6 @@ model FlashSale {
   updatedAt     DateTime @updatedAt
 
   @@map("flashSales")
-}
-
-model OrderItem {
-  id        String   @id @default(uuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("orderItems")
 }
 
 model Review {

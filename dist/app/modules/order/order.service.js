@@ -24,15 +24,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderServices = void 0;
+const client_1 = require("@prisma/client");
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
 const createOrder = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma_1.default.order.create({
-        data: payload,
-    });
-    return result;
+    return yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const orderData = {
+            customerId: payload.customerId,
+            shopId: payload.shopId,
+            quantity: payload.quantity,
+            totalAmount: payload.totalAmount,
+            discount: payload.discount,
+            orderNumber: payload.orderNumber,
+        };
+        const order = yield transactionClient.order.create({
+            data: orderData,
+        });
+        payload.orderItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+            yield transactionClient.orderItem.create({
+                data: {
+                    orderId: order.id,
+                    productId: item.productId,
+                    quantity: payload.quantity,
+                },
+            });
+        }));
+    }));
 });
-const getAllOrdersFromDB = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
+const getAllOrdersFromDB = (params, options, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip } = paginationHelper_1.paginationHelper.calculatePagination(options);
     const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
     const andConditions = [];
@@ -58,6 +77,26 @@ const getAllOrdersFromDB = (params, options) => __awaiter(void 0, void 0, void 0
         });
     }
     const whereConditions = andConditions.length > 0 ? { AND: andConditions } : {};
+    const user = yield prisma_1.default.user.findUniqueOrThrow({
+        where: { email: userEmail },
+    });
+    if (user.role === client_1.Role.CUSTOMER) {
+        const customer = yield prisma_1.default.customer.findUniqueOrThrow({
+            where: { userId: user.id },
+        });
+        whereConditions.customerId = customer.id;
+    }
+    else if (user.role === client_1.Role.VENDOR) {
+        yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+            const vendor = yield transactionClient.vendor.findUniqueOrThrow({
+                where: { userId: user.id },
+            });
+            const shop = yield transactionClient.shop.findUniqueOrThrow({
+                where: { vendorId: vendor.id },
+            });
+            whereConditions.shopId = shop.id;
+        }));
+    }
     const result = yield prisma_1.default.order.findMany({
         where: whereConditions,
         skip,
@@ -97,7 +136,7 @@ const getSingleOrderFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
     return order;
 });
 const deleteOrderFromDB = (orderId) => __awaiter(void 0, void 0, void 0, function* () {
-    const order = yield prisma_1.default.order.findUniqueOrThrow({
+    yield prisma_1.default.order.findUniqueOrThrow({
         where: { id: orderId },
     });
     const result = yield prisma_1.default.order.delete({
@@ -106,7 +145,7 @@ const deleteOrderFromDB = (orderId) => __awaiter(void 0, void 0, void 0, functio
     return result;
 });
 const updateOrder = (orderId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const order = yield prisma_1.default.order.findUniqueOrThrow({
+    yield prisma_1.default.order.findUniqueOrThrow({
         where: { id: orderId },
     });
     const result = yield prisma_1.default.order.update({

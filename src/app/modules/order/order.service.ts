@@ -1,15 +1,39 @@
-import { Prisma } from "@prisma/client";
+import { Order, OrderItem, Prisma, Role } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { paginationHelper } from "../../utils/paginationHelper";
 
-const createOrder = async (payload: Prisma.OrderCreateInput) => {
-  const result = await prisma.order.create({
-    data: payload,
+const createOrder = async (payload: Order & { orderItems: OrderItem[] }) => {
+  return await prisma.$transaction(async (transactionClient) => {
+    const orderData = {
+      customerId: payload.customerId,
+      shopId: payload.shopId,
+      quantity: payload.quantity,
+      totalAmount: payload.totalAmount,
+      discount: payload.discount,
+      orderNumber: payload.orderNumber,
+    };
+
+    const order = await transactionClient.order.create({
+      data: orderData,
+    });
+
+    payload.orderItems.forEach(async (item) => {
+      await transactionClient.orderItem.create({
+        data: {
+          orderId: order.id,
+          productId: item.productId,
+          quantity: payload.quantity,
+        },
+      });
+    });
   });
-  return result;
 };
 
-const getAllOrdersFromDB = async (params: any, options: any) => {
+const getAllOrdersFromDB = async (
+  params: any,
+  options: any,
+  userEmail: string
+) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
 
   const { searchTerm, ...filterData } = params;
@@ -40,6 +64,28 @@ const getAllOrdersFromDB = async (params: any, options: any) => {
 
   const whereConditions: Prisma.OrderWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
+
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { email: userEmail },
+  });
+
+  if (user.role === Role.CUSTOMER) {
+    const customer = await prisma.customer.findUniqueOrThrow({
+      where: { userId: user.id },
+    });
+    whereConditions.customerId = customer.id;
+  } else if (user.role === Role.VENDOR) {
+    await prisma.$transaction(async (transactionClient) => {
+      const vendor = await transactionClient.vendor.findUniqueOrThrow({
+        where: { userId: user.id },
+      });
+      const shop = await transactionClient.shop.findUniqueOrThrow({
+        where: { vendorId: vendor.id },
+      });
+
+      whereConditions.shopId = shop.id;
+    });
+  }
 
   const result = await prisma.order.findMany({
     where: whereConditions,
@@ -86,7 +132,7 @@ const getSingleOrderFromDB = async (id: string) => {
 };
 
 const deleteOrderFromDB = async (orderId: string) => {
-  const order = await prisma.order.findUniqueOrThrow({
+  await prisma.order.findUniqueOrThrow({
     where: { id: orderId },
   });
 
@@ -100,7 +146,7 @@ const updateOrder = async (
   orderId: string,
   payload: Prisma.OrderUpdateInput
 ) => {
-  const order = await prisma.order.findUniqueOrThrow({
+  await prisma.order.findUniqueOrThrow({
     where: { id: orderId },
   });
 

@@ -31,7 +31,8 @@ const createOrder = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
 const getAllOrders = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const filters = (0, pick_1.default)(req.query, order_constant_1.OrderFilterableFields);
     const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-    const orders = yield order_service_1.OrderServices.getAllOrdersFromDB(filters, options);
+    const userEmail = req.user.email;
+    const orders = yield order_service_1.OrderServices.getAllOrdersFromDB(filters, options, userEmail);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
