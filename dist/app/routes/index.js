@@ -12,6 +12,7 @@ const order_route_1 = require("../modules/order/order.route");
 const product_route_1 = require("../modules/product/product.route");
 const review_route_1 = require("../modules/review/review.route");
 const follow_route_1 = require("../modules/follow/follow.route");
+const flashSale_route_1 = require("../modules/flashSale/flashSale.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -53,6 +54,10 @@ const moduleRoutes = [
     {
         path: "/reviews",
         route: review_route_1.ReviewRoutes,
+    },
+    {
+        path: "/flash-sales",
+        route: flashSale_route_1.FlashSaleRoutes,
     },
     {
         path: "/follow-shop",

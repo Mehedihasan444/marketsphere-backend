@@ -108,7 +108,7 @@ model Category {
 }
 
 model Product {
-  id          String      @id @default(uuid())
+  id          String     @id @default(uuid())
   name        String
   description String
   price       Float
@@ -116,16 +116,18 @@ model Product {
   discount    Float
   quantity    Int
   categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  flashSaleId String
+  flashSale   FlashSale  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
   shopId      String
-  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  isDeleted   Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  shop        Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   cartItems   CartItem[]
-  flashSales  FlashSale[]
-  orderItems  OrderItem[]
-  reviews     Review[]
+
+  orderItems OrderItem[]
+  reviews    Review[]
 
   @@map("products")
 }
@@ -214,18 +216,17 @@ model CartItem {
 }
 
 model FlashSale {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   name          String
   description   String
   image         String
   discount      Float
   startDateTime DateTime
   endDateTime   DateTime
-  productId     String
-  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  isDeleted     Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Product       Product[]
 
   @@map("flashSales")
 }
