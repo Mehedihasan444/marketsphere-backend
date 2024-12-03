@@ -22,10 +22,6 @@ model User {
   admin              Admin?
   customer           Customer?
   vendor             Vendor?
-  cart               Cart[]
-  follows            Follow[]
-  orders             Order[]
-  reviews            Review[]
 
   @@map("users")
 }
@@ -59,8 +55,8 @@ model Shop {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   vendor      Vendor     @relation(fields: [vendorId], references: [id])
-  categories  Category[] // Categories related to this shop
-  products    Product[] // Products available in this shop
+  categories  Category[]
+  products    Product[]
   followers   Follow[]
   reviews     Review[]
 
@@ -87,6 +83,10 @@ model Customer {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  Order     Order[]
+  Review    Review[]
+  Cart      Cart[]
+  Follow    Follow[]
 
   @@map("customers")
 }
@@ -130,34 +130,36 @@ model Product {
 }
 
 model Cart {
-  id        String     @id @default(uuid())
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cartItems CartItem[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id         String     @id @default(uuid())
+  customerId String
+  customer   Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   @@map("carts")
 }
 
 model Follow {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shopId    String
-  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shopId     String
+  shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("follows")
 }
 
 model Order {
   id          String      @id @default(uuid())
-  userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   quantity    Int
   totalAmount Float
+  discount    Float       @default(0)
+  orderNumber String      @unique
   status      OrderStatus @default(PENDING)
   isDeleted   Boolean     @default(false)
   createdAt   DateTime    @default(now())
@@ -226,18 +228,18 @@ model OrderItem {
 }
 
 model Review {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  rating    Float
-  comment   String
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Shop      Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId    String?
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating     Float
+  comment    String
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Shop       Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String?
 
   @@map("reviews")
 }
