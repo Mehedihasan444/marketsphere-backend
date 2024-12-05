@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CouponRoutes = void 0;
+const express_1 = __importDefault(require("express"));
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
+const client_1 = require("@prisma/client");
+const coupon_controller_1 = require("./coupon.controller");
+const coupon_validation_1 = require("./coupon.validation");
+const router = express_1.default.Router();
+router.post("/", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.CouponValidationSchema.createCouponSchema), coupon_controller_1.CouponControllers.createCoupon);
+router.post("/apply", (0, auth_1.default)(client_1.Role.CUSTOMER), coupon_controller_1.CouponControllers.applyCoupon);
+router.get("/", coupon_controller_1.CouponControllers.getAllCoupons);
+router.get("/:id", coupon_controller_1.CouponControllers.getSingleShopCoupons);
+router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), (0, validateRequest_1.default)(coupon_validation_1.CouponValidationSchema.updateCouponSchema), coupon_controller_1.CouponControllers.updateCoupon);
+router.delete("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), coupon_controller_1.CouponControllers.deleteCoupon);
+exports.CouponRoutes = router;

@@ -37,7 +37,7 @@ model Vendor {
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  Shop        Shop[]
+  shop        Shop[]
 
   @@map("vendors")
 }
@@ -59,7 +59,8 @@ model Shop {
   products    Product[]
   followers   Follow[]
   reviews     Review[]
-  Order       Order[]
+  order       Order[]
+  coupon      Coupon[]
 
   @@map("shops")
 }
@@ -84,10 +85,10 @@ model Customer {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Order     Order[]
-  Review    Review[]
-  Cart      Cart[]
-  Follow    Follow[]
+  order     Order[]
+  review    Review[]
+  cart      Cart[]
+  follow    Follow[]
 
   @@map("customers")
 }
@@ -170,7 +171,7 @@ model Order {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
-  coupons     Coupon[]
+  couponItem  CouponItem?
 
   @@map("orders")
 }
@@ -189,17 +190,30 @@ model OrderItem {
 }
 
 model Coupon {
+  id         String       @id @default(uuid())
+  shopId     String
+  Shop       Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  isDeleted  Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  couponItem CouponItem[]
+
+  @@map("coupons")
+}
+
+model CouponItem {
   id         String   @id @default(uuid())
-  code       String   @unique
   discount   Float
   expiryDate DateTime
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  isDeleted  Boolean  @default(false)
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  orderId    String?   @unique
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  code       String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@map("coupons")
+  @@map("couponItems")
 }
 
 model CartItem {

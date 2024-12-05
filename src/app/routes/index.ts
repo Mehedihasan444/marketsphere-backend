@@ -11,6 +11,7 @@ import { ProductRoutes } from "../modules/product/product.route";
 import { ReviewRoutes } from "../modules/review/review.route";
 import { FollowRoutes } from "../modules/follow/follow.route";
 import { FlashSaleRoutes } from "../modules/flashSale/flashSale.route";
+import { CouponRoutes } from "../modules/coupon/coupon.route";
 
 const router = Router();
 
@@ -62,6 +63,10 @@ const moduleRoutes = [
   {
     path: "/follow-shop",
     route: FollowRoutes,
+  },
+  {
+    path: "/coupons",
+    route: CouponRoutes,
   },
 ];
 
