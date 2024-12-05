@@ -18,7 +18,8 @@ const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const flashSale_service_1 = require("./flashSale.service");
 const createFlashSale = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = req.body;
-    const flashSale = yield flashSale_service_1.FlashSaleServices.createFlashSale(data);
+    const file = req.file;
+    const flashSale = yield flashSale_service_1.FlashSaleServices.createFlashSale(file, data);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: httpStatus.OK,

@@ -14,7 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FlashSaleServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
-const createFlashSale = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
+const createFlashSale = (file, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    if (file) {
+        const image = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.image.originalname, file.image.path);
+        payload.image = image.secure_url;
+    }
     const flashSale = yield prisma_1.default.flashSale.create({ data: payload });
     return flashSale;
 });
@@ -34,5 +39,5 @@ exports.FlashSaleServices = {
     createFlashSale,
     getAllFlashSales,
     getSingleFlashSale,
-    deleteFlashSale
+    deleteFlashSale,
 };

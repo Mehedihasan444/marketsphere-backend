@@ -58,15 +58,6 @@ const getAllUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: users,
     });
 }));
-const getSingleUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield user_service_1.UserServices.getSingleUserFromDB(req.params.id);
-    (0, sendResponse_1.default)(res, {
-        success: true,
-        statusCode: http_status_1.default.OK,
-        message: "User Retrieved Successfully",
-        data: user,
-    });
-}));
 const deleteUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     yield user_service_1.UserServices.deleteUserFromDB(id);
@@ -77,12 +68,33 @@ const deleteUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
         data: null,
     });
 }));
-const updateUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield user_service_1.UserServices.updateUser(req.params.id, req.body);
+const getMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield user_service_1.UserServices.getMyProfile(user);
     (0, sendResponse_1.default)(res, {
-        success: true,
         statusCode: http_status_1.default.OK,
-        message: "User updated successfully",
+        success: true,
+        message: "My profile data fetched!",
+        data: result,
+    });
+}));
+const changeProfileStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const result = yield user_service_1.UserServices.changeProfileStatus(id, req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Users profile status changed!",
+        data: result,
+    });
+}));
+const updateMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const result = yield user_service_1.UserServices.updateMyProfile(user, req);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "My profile updated!",
         data: result,
     });
 }));
@@ -90,8 +102,9 @@ exports.UserControllers = {
     createAdmin,
     createVendor,
     createCustomer,
-    getSingleUser,
     getAllUsers,
     deleteUser,
-    updateUser,
+    getMyProfile,
+    updateMyProfile,
+    changeProfileStatus,
 };

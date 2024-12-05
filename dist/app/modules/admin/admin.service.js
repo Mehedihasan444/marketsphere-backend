@@ -65,7 +65,7 @@ const getAllAdminFromDB = (params, options) => __awaiter(void 0, void 0, void 0,
                 createdAt: "desc",
             },
         select: {
-            userId: true,
+            email: true,
             user: true,
         },
     });

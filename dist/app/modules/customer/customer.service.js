@@ -65,7 +65,7 @@ const getAllCustomersFromDB = (params, options) => __awaiter(void 0, void 0, voi
                 createdAt: "desc",
             },
         select: {
-            userId: true,
+            email: true,
             user: true,
         },
     });

@@ -40,7 +40,8 @@ const registerUser = async (payload: User) => {
     });
    await transactionClient.customer.create({
       data: {
-        userId: user.id,
+        name: user.name,
+        email: user.email,
       },
     });
     return user;

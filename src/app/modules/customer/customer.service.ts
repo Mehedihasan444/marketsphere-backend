@@ -47,7 +47,7 @@ const getAllCustomersFromDB = async (params: any, options: any) => {
             createdAt: "desc",
           },
     select: {
-      userId: true,
+      email: true,
       user: true,
     },
   });

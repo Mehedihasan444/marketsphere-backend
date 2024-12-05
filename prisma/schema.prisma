@@ -26,18 +26,54 @@ model User {
   @@map("users")
 }
 
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  phone        String   @default("")
+  address      String   @default("")
+  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Customer {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  phone        String?  @default("")
+  address      String?  @default("")
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  order        Order[]
+  review       Review[]
+  cart         Cart[]
+  follow       Follow[]
+
+  @@map("customers")
+}
+
 model Vendor {
-  id          String   @id @default(uuid())
-  name        String
-  shopName    String
-  shopLogo    String
-  description String
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isDeleted   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  shop        Shop[]
+  id           String   @id @default(uuid())
+  name         String
+  shopName     String
+  shopLogo     String
+  description  String
+  email        String   @unique
+  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  phone        String   @default("")
+  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  shop         Shop[]
 
   @@map("vendors")
 }
@@ -46,8 +82,8 @@ model Shop {
   id          String     @id @default(uuid())
   name        String
   description String
-  logo        String
-  banner      String?
+  logo        String     @default("https://thumbs.dreamstime.com/b/online-shop-vector-logo-business-online-shop-vector-logo-business-illustration-design-139333744.jpg")
+  banner      String     @default("https://t3.ftcdn.net/jpg/03/65/52/86/360_F_365528663_miV08QzGGVLqhRRQVQ4B9C9PtoTRJiSv.jpg")
   vendorId    String     @unique
   status      ShopStatus @default(PENDING)
   isActive    Boolean    @default(true)
@@ -63,34 +99,6 @@ model Shop {
   coupon      Coupon[]
 
   @@map("shops")
-}
-
-model Admin {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("admins")
-}
-
-model Customer {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone     String?  @default("")
-  address   String?  @default("")
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  order     Order[]
-  review    Review[]
-  cart      Cart[]
-  follow    Follow[]
-
-  @@map("customers")
 }
 
 model Category {
@@ -207,8 +215,8 @@ model CouponItem {
   expiryDate DateTime
   couponId   String
   coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  orderId    String?   @unique
-  order      Order?    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String?  @unique
+  order      Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   code       String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -233,7 +241,7 @@ model FlashSale {
   id            String    @id @default(uuid())
   name          String
   description   String
-  image         String
+  image         String 
   discount      Float
   startDateTime DateTime
   endDateTime   DateTime

@@ -20,7 +20,7 @@ const pick_1 = __importDefault(require("../../utils/pick"));
 const category_service_1 = require("./category.service");
 const category_constant_1 = require("./category.constant");
 const createCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const category = yield category_service_1.CategoryServices.createCategory(req.body);
+    const category = yield category_service_1.CategoryServices.createCategory(req.file, req.body);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

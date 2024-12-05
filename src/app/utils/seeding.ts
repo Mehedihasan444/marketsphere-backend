@@ -32,7 +32,8 @@ export const seed = async () => {
         });
         const admin = await transactionClient.admin.create({
           data: {
-            userId: user.id,
+            name: user.name,
+            email: user.email,
           },
         });
         return admin;

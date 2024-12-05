@@ -5,7 +5,7 @@ import { ProductFilterableFields } from "./product.constant";
 import { ProductServices } from "./product.service";
 
 const createProduct = catchAsync(async (req, res) => {
-    const product = await ProductServices.createProduct(req.body);
+    const product = await ProductServices.createProduct(req.files,req.body);
   
     sendResponse(res, {
       success: true,

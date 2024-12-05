@@ -26,7 +26,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoryServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
-const createCategory = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
+const createCategory = (file, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    if (file.image) {
+        const image = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.image.originalname, file.image.path);
+        payload.image = image.secure_url;
+    }
     const result = yield prisma_1.default.category.create({
         data: payload,
     });

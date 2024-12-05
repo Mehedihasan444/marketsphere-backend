@@ -24,12 +24,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const client_1 = require("@prisma/client");
 const user_constant_1 = require("./user.constant");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
+// Create a new admin user
 const createAdmin = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
     const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
@@ -38,13 +39,15 @@ const createAdmin = (payload) => __awaiter(void 0, void 0, void 0, function* () 
         });
         const admin = yield transactionClient.admin.create({
             data: {
-                userId: user.id,
+                name: user.name,
+                email: user.email,
             },
         });
         return admin;
     }));
     return result;
 });
+// Create a new customer user
 const createCustomer = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
     const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
@@ -53,15 +56,15 @@ const createCustomer = (payload) => __awaiter(void 0, void 0, void 0, function* 
         });
         const customer = yield transactionClient.customer.create({
             data: {
-                userId: user.id,
-                // phone: payload.phone,
-                // address: payload.address,
+                name: user.name,
+                email: user.email,
             },
         });
         return customer;
     }));
     return result;
 });
+// Create a new vendor user
 const createVendor = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const hashedPassword = yield bcryptjs_1.default.hash(payload.password, 12);
     const result = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
@@ -70,8 +73,8 @@ const createVendor = (payload) => __awaiter(void 0, void 0, void 0, function* ()
         });
         const vendor = yield transactionClient.vendor.create({
             data: {
-                userId: user.id,
                 name: payload.name,
+                email: user.email,
                 shopName: payload.shopName,
                 shopLogo: payload.shopLogo,
                 description: payload.description,
@@ -140,10 +143,7 @@ const getAllUsersFromDB = (params, options) => __awaiter(void 0, void 0, void 0,
         data: result,
     };
 });
-const getSingleUserFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield prisma_1.default.user.findUniqueOrThrow({ where: { id } });
-    return user;
-});
+// delete a user from the database
 const deleteUserFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findUniqueOrThrow({ where: { id: userId } });
     if (user.role === "ADMIN") {
@@ -152,20 +152,135 @@ const deleteUserFromDB = (userId) => __awaiter(void 0, void 0, void 0, function*
     const result = yield prisma_1.default.user.delete({ where: { id: userId } });
     return result;
 });
-const updateUser = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield prisma_1.default.user.findUniqueOrThrow({ where: { id: userId } });
-    const result = yield prisma_1.default.user.update({
-        where: { id: userId },
-        data: payload,
+// change the status of a user
+const changeProfileStatus = (id, status) => __awaiter(void 0, void 0, void 0, function* () {
+    const userData = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            id,
+        },
     });
-    return result;
+    const updateUserStatus = yield prisma_1.default.user.update({
+        where: {
+            id,
+        },
+        data: status,
+    });
+    return updateUserStatus;
+});
+// get a single user from the database
+const getMyProfile = (user) => __awaiter(void 0, void 0, void 0, function* () {
+    const userInfo = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            email: user === null || user === void 0 ? void 0 : user.email,
+            status: client_1.UserStatus.ACTIVE,
+        },
+        select: {
+            id: true,
+            email: true,
+            needPasswordChange: true,
+            role: true,
+            status: true,
+        },
+    });
+    let profileInfo;
+    if (userInfo.role === client_1.Role.SUPER_ADMIN) {
+        profileInfo = yield prisma_1.default.admin.findUnique({
+            where: {
+                email: userInfo.email,
+            },
+            include: {
+                user: true,
+            },
+        });
+    }
+    else if (userInfo.role === client_1.Role.ADMIN) {
+        profileInfo = yield prisma_1.default.admin.findUnique({
+            where: {
+                email: userInfo.email,
+            },
+            include: {
+                user: true,
+            },
+        });
+    }
+    else if (userInfo.role === client_1.Role.CUSTOMER) {
+        profileInfo = yield prisma_1.default.customer.findUnique({
+            where: {
+                email: userInfo.email,
+            },
+            include: {
+                user: true,
+            },
+        });
+    }
+    else if (userInfo.role === client_1.Role.VENDOR) {
+        profileInfo = yield prisma_1.default.vendor.findUnique({
+            where: {
+                email: userInfo.email,
+            },
+            include: {
+                user: true,
+            },
+        });
+    }
+    return Object.assign(Object.assign({}, userInfo), profileInfo);
+});
+const updateMyProfile = (user, req) => __awaiter(void 0, void 0, void 0, function* () {
+    const userInfo = yield prisma_1.default.user.findUniqueOrThrow({
+        where: {
+            email: user === null || user === void 0 ? void 0 : user.email,
+            status: client_1.UserStatus.ACTIVE,
+        },
+    });
+    const { profilePhoto } = req.file;
+    if (profilePhoto) {
+        const uploadToCloudinary = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(profilePhoto.originalname, profilePhoto.path);
+        req.body.profilePhoto = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;
+    }
+    let profileInfo;
+    if (userInfo.role === client_1.Role.SUPER_ADMIN) {
+        profileInfo = yield prisma_1.default.admin.update({
+            where: {
+                email: userInfo.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (userInfo.role === client_1.Role.ADMIN) {
+        profileInfo = yield prisma_1.default.admin.update({
+            where: {
+                email: userInfo.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (userInfo.role === client_1.Role.VENDOR) {
+        profileInfo = yield prisma_1.default.vendor.update({
+            where: {
+                email: userInfo.email,
+            },
+            data: req.body,
+        });
+    }
+    else if (userInfo.role === client_1.Role.CUSTOMER) {
+        profileInfo = yield prisma_1.default.customer.update({
+            where: {
+                email: userInfo.email,
+            },
+            data: req.body,
+        });
+    }
+    return Object.assign({}, profileInfo);
 });
 exports.UserServices = {
     createAdmin,
     createCustomer,
     createVendor,
     getAllUsersFromDB,
-    getSingleUserFromDB,
     deleteUserFromDB,
-    updateUser,
+    changeProfileStatus,
+    getMyProfile,
+    updateMyProfile,
+    // getSingleUserFromDB,
+    // updateUser,
 };

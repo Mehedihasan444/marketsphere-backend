@@ -4,7 +4,8 @@ import { FlashSaleServices } from "./flashSale.service";
 
 const createFlashSale = catchAsync(async (req, res) => {
   const data = req.body;
-  const flashSale = await FlashSaleServices.createFlashSale(data);
+  const file= req.file as any;
+  const flashSale = await FlashSaleServices.createFlashSale(file,data);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

@@ -10,12 +10,25 @@ const auth_1 = __importDefault(require("../../middlewares/auth"));
 const user_validation_1 = require("./user.validation");
 const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
 const client_1 = require("@prisma/client");
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const router = express_1.default.Router();
 exports.UserRoutes = router;
-router.post("/create-admin", (0, auth_1.default)(client_1.Role.ADMIN), (0, validateRequest_1.default)(user_validation_1.UserValidation.createUserValidationSchema), user_controller_1.UserControllers.createAdmin);
-router.post("/create-vendor", (0, auth_1.default)(client_1.Role.ADMIN), (0, validateRequest_1.default)(user_validation_1.UserValidation.createUserValidationSchema), user_controller_1.UserControllers.createVendor);
+//create admin
+router.post("/create-admin", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(user_validation_1.UserValidation.createUserValidationSchema), user_controller_1.UserControllers.createAdmin);
+// create vendor
+router.post("/create-vendor", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(user_validation_1.UserValidation.createUserValidationSchema), user_controller_1.UserControllers.createVendor);
+// create customer
 router.post("/create-customer", (0, validateRequest_1.default)(user_validation_1.UserValidation.createUserValidationSchema), user_controller_1.UserControllers.createCustomer);
+// get all users
 router.get("/", (0, auth_1.default)(client_1.Role.ADMIN), user_controller_1.UserControllers.getAllUsers);
-router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN), user_controller_1.UserControllers.updateUser);
-router.get("/:id", user_controller_1.UserControllers.getSingleUser);
+// get my profile
+router.get("/me", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), user_controller_1.UserControllers.getMyProfile);
+// update my profile
+router.patch("/update-my-profile", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), sendImageToCloudinary_1.upload.single("profilePhoto"), (req, res, next) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+}, user_controller_1.UserControllers.updateMyProfile);
+// change profile status
+router.patch("/:id/status", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), user_controller_1.UserControllers.changeProfileStatus);
+// delete user
 router.delete("/:id", (0, auth_1.default)(client_1.Role.ADMIN), user_controller_1.UserControllers.deleteUser);

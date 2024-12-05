@@ -44,7 +44,8 @@ const seed = () => __awaiter(void 0, void 0, void 0, function* () {
                 });
                 const admin = yield transactionClient.admin.create({
                     data: {
-                        userId: user.id,
+                        name: user.name,
+                        email: user.email,
                     },
                 });
                 return admin;

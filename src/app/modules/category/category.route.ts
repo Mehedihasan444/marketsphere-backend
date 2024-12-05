@@ -1,9 +1,10 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import auth from "../../middlewares/auth";
 import { Role } from "@prisma/client";
 import { CategoryControllers } from "./category.controller"; // Adjust the import path
 import validateRequest from "../../middlewares/validateRequest ";
 import { categoryValidationSchema } from "./category.validation";
+import { upload } from "../../utils/sendImageToCloudinary";
 
 const router = express.Router();
 
@@ -13,6 +14,11 @@ export const CategoryRoutes = router;
 router.post(
   "/",
   auth(Role.ADMIN),
+  upload.single("image"),
+  (req:Request, res:Response, next:NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   validateRequest(categoryValidationSchema.createCategoryValidationSchema),
   CategoryControllers.createCategory
 );

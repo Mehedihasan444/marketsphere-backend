@@ -1,8 +1,16 @@
-import { Prisma } from "@prisma/client";
+import { Category, Prisma } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { paginationHelper } from "../../utils/paginationHelper";
+import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
-const createCategory = async (payload: Prisma.CategoryCreateInput) => {
+const createCategory = async (file: any, payload: Category) => {
+  if (file.image) { 
+    const image = await sendImageToCloudinary(
+      file.image.originalname,
+      file.image.path
+    );
+    payload.image = image.secure_url as string;
+  }
   const result = await prisma.category.create({
     data: payload,
   });

@@ -57,14 +57,14 @@ const getAllReviewsFromDB = (params, options, userEmail) => __awaiter(void 0, vo
     });
     if (user.role === client_1.Role.CUSTOMER) {
         const customer = yield prisma_1.default.customer.findUniqueOrThrow({
-            where: { userId: user.id },
+            where: { email: user.email },
         });
         whereConditions.customerId = customer.id;
     }
     else if (user.role === client_1.Role.VENDOR) {
         yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
             const vendor = yield transactionClient.vendor.findUniqueOrThrow({
-                where: { userId: user.id },
+                where: { email: user.email },
             });
             const shop = yield transactionClient.shop.findUniqueOrThrow({
                 where: { vendorId: vendor.id },

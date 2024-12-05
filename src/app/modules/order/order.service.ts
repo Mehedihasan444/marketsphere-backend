@@ -71,13 +71,13 @@ const getAllOrdersFromDB = async (
 
   if (user.role === Role.CUSTOMER) {
     const customer = await prisma.customer.findUniqueOrThrow({
-      where: { userId: user.id },
+      where: { email: user.email },
     });
     whereConditions.customerId = customer.id;
   } else if (user.role === Role.VENDOR) {
     await prisma.$transaction(async (transactionClient) => {
       const vendor = await transactionClient.vendor.findUniqueOrThrow({
-        where: { userId: user.id },
+        where: { email: user.email },
       });
       const shop = await transactionClient.shop.findUniqueOrThrow({
         where: { vendorId: vendor.id },

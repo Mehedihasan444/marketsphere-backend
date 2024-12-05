@@ -44,7 +44,8 @@ const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* ()
         });
         yield transactionClient.customer.create({
             data: {
-                userId: user.id,
+                name: user.name,
+                email: user.email,
             },
         });
         return user;

@@ -6,7 +6,7 @@ import { CategoryServices } from "./category.service";
 import { CategoryFilterableFields } from "./category.constant";
 
 const createCategory = catchAsync(async (req, res) => {
-  const category = await CategoryServices.createCategory(req.body);
+  const category = await CategoryServices.createCategory(req.file,req.body);
 
   sendResponse(res, {
     success: true,

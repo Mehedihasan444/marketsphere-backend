@@ -26,7 +26,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
-const createProduct = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
+const createProduct = (files, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    if (files) {
+        const { images } = files;
+        const imageUrls = yield Promise.all(images.map((image) => __awaiter(void 0, void 0, void 0, function* () {
+            const imageName = image === null || image === void 0 ? void 0 : image.originalname;
+            const path = image === null || image === void 0 ? void 0 : image.path;
+            const { secure_url } = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(imageName, path);
+            return secure_url;
+        })));
+        payload.images = imageUrls;
+    }
     const result = yield prisma_1.default.product.create({
         data: payload,
     });

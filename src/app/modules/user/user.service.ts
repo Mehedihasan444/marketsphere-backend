@@ -1,10 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from "../../config/prisma";
-import { Admin, Customer, Prisma, Role, User, Vendor } from "@prisma/client";
-import { UserSearchableFields } from "./user.constant";
+import {
+  Admin,
+  Customer,
+  Prisma,
+  Role,
+  User,
+  UserStatus,
+  Vendor,
+} from "@prisma/client";
+import { IAuthUser, UserSearchableFields } from "./user.constant";
 import bcrypt from "bcryptjs";
 import { paginationHelper } from "../../utils/paginationHelper";
-const createAdmin = async (payload: User) => {
+import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
+import { Request } from "express";
+
+// Create a new admin user
+const createAdmin = async (payload: User & Admin) => {
   const hashedPassword = await bcrypt.hash(payload.password, 12);
 
   const result = await prisma.$transaction(async (transactionClient) => {
@@ -17,7 +28,8 @@ const createAdmin = async (payload: User) => {
     });
     const admin = await transactionClient.admin.create({
       data: {
-        userId: user.id,
+        name: user.name,
+        email: user.email,
       },
     });
     return admin;
@@ -25,7 +37,7 @@ const createAdmin = async (payload: User) => {
 
   return result;
 };
-
+// Create a new customer user
 const createCustomer = async (payload: User & Customer) => {
   const hashedPassword = await bcrypt.hash(payload.password, 12);
 
@@ -39,9 +51,8 @@ const createCustomer = async (payload: User & Customer) => {
     });
     const customer = await transactionClient.customer.create({
       data: {
-        userId: user.id,
-        // phone: payload.phone,
-        // address: payload.address,
+        name: user.name,
+        email: user.email,
       },
     });
     return customer;
@@ -49,6 +60,7 @@ const createCustomer = async (payload: User & Customer) => {
 
   return result;
 };
+// Create a new vendor user
 const createVendor = async (payload: User & Vendor) => {
   const hashedPassword = await bcrypt.hash(payload.password, 12);
 
@@ -62,8 +74,8 @@ const createVendor = async (payload: User & Vendor) => {
     });
     const vendor = await transactionClient.vendor.create({
       data: {
-        userId: user.id,
         name: payload.name,
+        email: user.email,
         shopName: payload.shopName,
         shopLogo: payload.shopLogo,
         description: payload.description,
@@ -143,12 +155,7 @@ const getAllUsersFromDB = async (params: any, options: any) => {
   };
 };
 
-const getSingleUserFromDB = async (id: string) => {
-  const user = await prisma.user.findUniqueOrThrow({ where: { id } });
-
-  return user;
-};
-
+// delete a user from the database
 const deleteUserFromDB = async (userId: string) => {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
@@ -159,21 +166,138 @@ const deleteUserFromDB = async (userId: string) => {
   return result;
 };
 
-const updateUser = async (userId: string, payload: User) => {
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-
-  const result = await prisma.user.update({
-    where: { id: userId },
-    data: payload,
+// change the status of a user
+const changeProfileStatus = async (id: string, status: Role) => {
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id,
+    },
   });
-  return result;
+
+  const updateUserStatus = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: status,
+  });
+
+  return updateUserStatus;
+};
+// get a single user from the database
+const getMyProfile = async (user: IAuthUser) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      status: UserStatus.ACTIVE,
+    },
+    select: {
+      id: true,
+      email: true,
+      needPasswordChange: true,
+      role: true,
+      status: true,
+    },
+  });
+
+  let profileInfo;
+
+  if (userInfo.role === Role.SUPER_ADMIN) {
+    profileInfo = await prisma.admin.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+      include: {
+        user: true,
+      },
+    });
+  } else if (userInfo.role === Role.ADMIN) {
+    profileInfo = await prisma.admin.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+      include: {
+        user: true,
+      },
+    });
+  } else if (userInfo.role === Role.CUSTOMER) {
+    profileInfo = await prisma.customer.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+      include: {
+        user: true,
+      },
+    });
+  } else if (userInfo.role === Role.VENDOR) {
+    profileInfo = await prisma.vendor.findUnique({
+      where: {
+        email: userInfo.email,
+      },
+      include: {
+        user: true,
+      },
+    });
+  }
+
+  return { ...userInfo, ...profileInfo };
+};
+const updateMyProfile = async (user: IAuthUser, req: Request) => {
+  const userInfo = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user?.email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const {profilePhoto} = req.file as any;
+  if (profilePhoto) {
+      const uploadToCloudinary = await sendImageToCloudinary(profilePhoto.originalname, profilePhoto.path);
+      req.body.profilePhoto = uploadToCloudinary?.secure_url;
+  }
+
+  let profileInfo;
+
+  if (userInfo.role === Role.SUPER_ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body as Admin | {},
+    });
+  } else if (userInfo.role === Role.ADMIN) {
+    profileInfo = await prisma.admin.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body as Admin | {},
+    });
+  } else if (userInfo.role === Role.VENDOR) {
+    profileInfo = await prisma.vendor.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body as Vendor | {},
+    });
+  } else if (userInfo.role === Role.CUSTOMER) {
+    profileInfo = await prisma.customer.update({
+      where: {
+        email: userInfo.email,
+      },
+      data: req.body as Customer | {},
+    });
+  }
+
+  return { ...profileInfo };
 };
 export const UserServices = {
   createAdmin,
   createCustomer,
   createVendor,
   getAllUsersFromDB,
-  getSingleUserFromDB,
   deleteUserFromDB,
-  updateUser,
+  changeProfileStatus,
+  getMyProfile,
+  updateMyProfile,
+  // getSingleUserFromDB,
+  // updateUser,
 };

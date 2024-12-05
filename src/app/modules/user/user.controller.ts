@@ -3,7 +3,7 @@ import sendResponse from "../../utils/sendResponse";
 import catchAsync from "../../utils/catchAsync";
 import { UserServices } from "./user.service";
 import pick from "../../utils/pick";
-import { userFilterableFields } from "./user.constant";
+import { IAuthUser, userFilterableFields } from "./user.constant";
 
 const createAdmin = catchAsync(async (req, res) => {
   const admin = await UserServices.createAdmin(req.body);
@@ -37,10 +37,9 @@ const createCustomer = catchAsync(async (req, res) => {
 });
 
 const getAllUsers = catchAsync(async (req, res) => {
-
   const filters = pick(req.query, userFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-console.log(options)
+  console.log(options);
   const users = await UserServices.getAllUsersFromDB(filters, options);
 
   sendResponse(res, {
@@ -51,16 +50,6 @@ console.log(options)
   });
 });
 
-const getSingleUser = catchAsync(async (req, res) => {
-  const user = await UserServices.getSingleUserFromDB(req.params.id);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: "User Retrieved Successfully",
-    data: user,
-  });
-});
 const deleteUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   await UserServices.deleteUserFromDB(id);
@@ -73,13 +62,41 @@ const deleteUser = catchAsync(async (req, res) => {
   });
 });
 
-const updateUser = catchAsync(async (req, res) => {
-  const result = await UserServices.updateUser(req.params.id, req.body);
+const getMyProfile = catchAsync(async (req, res) => {
+  const user = req.user;
+
+  const result = await UserServices.getMyProfile(user as IAuthUser);
 
   sendResponse(res, {
-    success: true,
     statusCode: httpStatus.OK,
-    message: "User updated successfully",
+    success: true,
+    message: "My profile data fetched!",
+    data: result,
+  });
+});
+const changeProfileStatus = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await UserServices.changeProfileStatus(id, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Users profile status changed!",
+    data: result,
+  });
+});
+const updateMyProfile = catchAsync(async (req, res) => {
+  const user = req.user;
+
+  const result = await UserServices.updateMyProfile(
+    user as IAuthUser,
+    req as any
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "My profile updated!",
     data: result,
   });
 });
@@ -88,8 +105,10 @@ export const UserControllers = {
   createAdmin,
   createVendor,
   createCustomer,
-  getSingleUser,
   getAllUsers,
   deleteUser,
-  updateUser,
+  getMyProfile,
+  updateMyProfile,
+  changeProfileStatus,
+
 };
