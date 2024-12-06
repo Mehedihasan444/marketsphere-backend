@@ -124,6 +124,7 @@ model Product {
   images      String[]
   discount    Float
   quantity    Int
+  rating      Float      @default(0)
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   flashSaleId String
@@ -241,7 +242,7 @@ model FlashSale {
   id            String    @id @default(uuid())
   name          String
   description   String
-  image         String 
+  image         String
   discount      Float
   startDateTime DateTime
   endDateTime   DateTime
