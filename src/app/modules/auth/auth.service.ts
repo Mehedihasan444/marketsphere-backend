@@ -38,56 +38,33 @@ const registerUser = async (payload: User) => {
         ...payload,
       },
     });
-   await transactionClient.customer.create({
+    const customer = await transactionClient.customer.create({
       data: {
         name: user.name,
         email: user.email,
       },
     });
-    return user;
+    return customer;
   });
 
-  //create token and sent to the  client
-
-  const jwtPayload = {
-    id: newUser.id,
-    name: newUser.name,
-    email: newUser.email,
-    role: newUser.role,
-    status: newUser.status,
-  };
-
-  const accessToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    config.jwt_access_expires_in as string
-  );
-
-  const refreshToken = createToken(
-    jwtPayload,
-    config.jwt_refresh_secret as string,
-    config.jwt_refresh_expires_in as string
-  );
-
-  return {
-    accessToken,
-    refreshToken,
-  };
+  return newUser;
 };
 
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findFirst({
     where: {
       email: payload.email,
-    },
+    }
   });
-
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "This user is not exist!");
+  }
   // checking if the user is blocked
 
   const userStatus = user?.status;
 
-  if (userStatus === "BLOCKED") {
+  if (userStatus === UserStatus.BLOCKED) {
     throw new AppError(httpStatus.FORBIDDEN, "This user is blocked!");
   }
   if (!(await bcrypt.compare(payload.password, user.password)))
