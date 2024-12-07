@@ -132,6 +132,7 @@ const getAllUsersFromDB = async (params: any, options: any) => {
     select: {
       id: true,
       email: true,
+      name: true,
       role: true,
       needPasswordChange: true,
       status: true,
@@ -167,8 +168,11 @@ const deleteUserFromDB = async (userId: string) => {
 };
 
 // change the status of a user
-const changeProfileStatus = async (id: string, status: Role) => {
-  const userData = await prisma.user.findUniqueOrThrow({
+const changeProfileStatus = async (
+  id: string,
+  payload: { role?: Role; status?: UserStatus }
+) => {
+  await prisma.user.findUniqueOrThrow({
     where: {
       id,
     },
@@ -178,7 +182,9 @@ const changeProfileStatus = async (id: string, status: Role) => {
     where: {
       id,
     },
-    data: status,
+    data: {
+      ...payload
+    },
   });
 
   return updateUserStatus;
@@ -249,10 +255,13 @@ const updateMyProfile = async (user: IAuthUser, req: Request) => {
     },
   });
 
-  const {profilePhoto} = req.file as any;
+  const { profilePhoto } = req.file as any;
   if (profilePhoto) {
-      const uploadToCloudinary = await sendImageToCloudinary(profilePhoto.originalname, profilePhoto.path);
-      req.body.profilePhoto = uploadToCloudinary?.secure_url;
+    const uploadToCloudinary = await sendImageToCloudinary(
+      profilePhoto.originalname,
+      profilePhoto.path
+    );
+    req.body.profilePhoto = uploadToCloudinary?.secure_url;
   }
 
   let profileInfo;

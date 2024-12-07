@@ -39,7 +39,7 @@ const createCustomer = catchAsync(async (req, res) => {
 const getAllUsers = catchAsync(async (req, res) => {
   const filters = pick(req.query, userFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-  console.log(options);
+
   const users = await UserServices.getAllUsersFromDB(filters, options);
 
   sendResponse(res, {
