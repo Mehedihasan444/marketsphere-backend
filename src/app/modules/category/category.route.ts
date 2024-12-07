@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import auth from "../../middlewares/auth";
 import { Role } from "@prisma/client";
 import { CategoryControllers } from "./category.controller"; // Adjust the import path
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { categoryValidationSchema } from "./category.validation";
 import { upload } from "../../utils/sendImageToCloudinary";
 

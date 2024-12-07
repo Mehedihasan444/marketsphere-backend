@@ -1,7 +1,7 @@
 import express from "express";
 import auth from "../../middlewares/auth";
 import { Role } from "@prisma/client";
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { ReviewControllers } from "./review.controller";
 import { reviewValidationSchema } from "./review.validation";
 

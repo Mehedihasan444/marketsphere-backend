@@ -1,6 +1,6 @@
 import express from "express";
 import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { Role } from "@prisma/client";
 import { CouponControllers } from "./coupon.controller";
 import { CouponValidationSchema } from "./coupon.validation";

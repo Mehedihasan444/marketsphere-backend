@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { FlashSaleControllers } from "./flashSale.controller";
 import { FlashSaleValidationSchema } from "./flashSale.validation";
 import auth from "../../middlewares/auth";

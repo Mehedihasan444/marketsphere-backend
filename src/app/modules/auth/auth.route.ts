@@ -4,7 +4,7 @@ import { AuthValidation } from "./auth.validation";
 import auth from "../../middlewares/auth";
 import validateRequest, {
   validateRequestCookies,
-} from "../../middlewares/validateRequest ";
+} from "../../middlewares/validateRequest";
 import { Role } from "@prisma/client";
 
 const router = express.Router();

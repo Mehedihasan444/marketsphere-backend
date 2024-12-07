@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import auth from "../../middlewares/auth";
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { Role } from "@prisma/client";
 import { ProductControllers } from "./product.controller";
 import { productValidationSchema } from "./product.validation";

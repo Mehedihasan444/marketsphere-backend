@@ -1,6 +1,6 @@
 import express from "express";
 import { FollowControllers } from "./follow.controller";
-import validateRequest from "../../middlewares/validateRequest ";
+import validateRequest from "../../middlewares/validateRequest";
 import { FollowValidationSchema } from "./follow.validation";
 
 const router = express.Router();
