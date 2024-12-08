@@ -4,6 +4,7 @@ import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createCategory = async (file: any, payload: Category) => {
+  console.log(file, payload);
   if (file?.image) { 
     const image = await sendImageToCloudinary(
       file.image.originalname,

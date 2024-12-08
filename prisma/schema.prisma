@@ -27,55 +27,106 @@ model User {
 }
 
 model Admin {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
-  phone        String   @default("")
-  address      String   @default("")
-  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
-  isDeleted    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String           @id @default(uuid())
+  name           String
+  email          String           @unique
+  profilePhoto   String           @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  phone          String           @default("")
+  address        String           @default("")
+  user           User             @relation(fields: [email], references: [email], onDelete: Cascade)
+  isDeleted      Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  AdminDashboard AdminDashboard[]
 
   @@map("admins")
 }
 
 model Customer {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
-  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
-  phone        String?  @default("")
-  address      String?  @default("")
-  isDeleted    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  order        Order[]
-  review       Review[]
-  cart         Cart[]
-  follow       Follow[]
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  profilePhoto      String              @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  user              User                @relation(fields: [email], references: [email], onDelete: Cascade)
+  phone             String?             @default("")
+  address           String?             @default("")
+  isDeleted         Boolean             @default(false)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  order             Order[]
+  review            Review[]
+  cart              Cart[]
+  follow            Follow[]
+  CustomerDashboard CustomerDashboard[]
 
   @@map("customers")
 }
 
 model Vendor {
-  id           String   @id @default(uuid())
-  name         String
-  // shopName     String
-  // shopLogo     String
-  // description  String
-  email        String   @unique
-  profilePhoto String   @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
-  phone        String   @default("")
-  user         User     @relation(fields: [email], references: [email], onDelete: Cascade)
-  isDeleted    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  shop         Shop[]
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  profilePhoto    String            @default("https://cdn-icons-png.flaticon.com/512/3607/3607444.png")
+  phone           String            @default("")
+  user            User              @relation(fields: [email], references: [email], onDelete: Cascade)
+  isDeleted       Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  shop            Shop[]
+  VendorDashboard VendorDashboard[]
 
   @@map("vendors")
+}
+
+model CustomerDashboard {
+  id            String   @id @default(uuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  totalOrders   Int 
+  totalSpent    Float 
+  totalSaved    Float 
+  totalReviews  Int 
+  totalProducts Int 
+  totalFollows  Int 
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("customerDashboards")
+}
+
+model VendorDashboard {
+  id              String   @id @default(uuid())
+  vendorId        String
+  vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  totalOrders     Int 
+  totalEarnings   Float 
+  totalProducts   Int 
+  totalCategories Int 
+  totalReviews    Int 
+  averageRating   Float 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("vendorDashboards")
+}
+
+model AdminDashboard {
+  id              String   @id @default(uuid())
+  adminId         String
+  admin           Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  totalUsers      Int 
+  totalVendors    Int 
+  totalCustomers  Int 
+  totalOrders     Int 
+  totalRevenue    Float 
+  totalProducts   Int 
+  totalCategories Int 
+  totalShops      Int 
+  totalReviews    Int 
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("adminDashboards")
 }
 
 model Shop {
@@ -91,7 +142,6 @@ model Shop {
   updatedAt   DateTime   @updatedAt
   vendorId    String     @unique
   vendor      Vendor     @relation(fields: [vendorId], references: [id])
-  categories  Category[]
   products    Product[]
   followers   Follow[]
   reviews     Review[]
@@ -110,8 +160,7 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   products    Product[]
-  Shop        Shop?     @relation(fields: [shopId], references: [id])
-  shopId      String?
+ 
 
   @@map("categories")
 }
@@ -128,7 +177,7 @@ model Product {
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   flashSaleId String?
-  flashSale   FlashSale?  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  flashSale   FlashSale? @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
   shopId      String
   shop        Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
   isDeleted   Boolean    @default(false)
@@ -265,8 +314,8 @@ model Review {
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  Shop       Shop?    @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId     String?
+  Shop       Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
 
   @@map("reviews")
 }

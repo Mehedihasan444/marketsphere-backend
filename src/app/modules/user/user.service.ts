@@ -172,22 +172,69 @@ const changeProfileStatus = async (
   id: string,
   payload: { role?: Role; status?: UserStatus }
 ) => {
-  await prisma.user.findUniqueOrThrow({
+  // Check if user exists
+  const isExist = await prisma.user.findUniqueOrThrow({
     where: {
       id,
     },
   });
 
-  const updateUserStatus = await prisma.user.update({
-    where: {
-      id,
-    },
-    data: {
-      ...payload
-    },
-  });
+  // If a role change is requested
+  if (payload.role) {
+    // Update the role in the user table
+    await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        role: payload.role,
+      },
+    });
 
-  return updateUserStatus;
+    // Delete the user record from the current role-specific table
+    const roleModels = {
+      [Role.ADMIN]: "admin",
+      [Role.CUSTOMER]: "customer",
+      [Role.VENDOR]: "vendor",
+    };
+
+    const currentRole = isExist.role;
+    if (currentRole && currentRole !== Role.SUPER_ADMIN && roleModels[currentRole]) {
+      const modelName = roleModels[currentRole as keyof typeof roleModels] as keyof typeof prisma;
+      await (prisma[modelName as keyof typeof prisma] as any).delete({
+        where: {
+          email: isExist.email,
+        },
+      });
+    }
+
+    // Add the user to the new role-specific table
+    const newRoleModel = roleModels[payload.role as keyof typeof roleModels];
+    if (newRoleModel) {
+      await (prisma[newRoleModel as keyof typeof prisma] as any).create({
+        data: {
+          name: isExist.name,
+          email: isExist.email,
+        },
+      });
+    }
+  }
+
+  // If only status change is requested
+  if (payload.status) {
+    return await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        status: payload.status,
+      },
+    });
+  }
+
+  return {
+    message: "User updated successfully",
+  };
 };
 // get a single user from the database
 const getMyProfile = async (user: IAuthUser) => {
