@@ -48,7 +48,7 @@ const getAllVendorsFromDB = async (params: any, options: any) => {
           },
     select: {
       user: true,
-      // shop: true,
+      shop: true,
     },
   });
 
@@ -72,7 +72,11 @@ const getSingleVendorFromDB = async (email: string) => {
     where: { email },
     include: {
       user: true,
-      shop: true
+      shop: {
+        include: {
+          products: true,
+        },
+      },
     },
   });
   return vendor;

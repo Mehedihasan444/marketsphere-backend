@@ -16,7 +16,11 @@ const getAllShops = catchAsync(async (req, res) => {
 });
 
 const createShop = catchAsync(async (req, res) => {
-  const shop = await ShopServices.createShopIntoDB(req.body);
+  const data=req.body
+  const images=req.files
+
+
+  const shop = await ShopServices.createShopIntoDB(data,images);
 
   sendResponse(res, {
     success: true,

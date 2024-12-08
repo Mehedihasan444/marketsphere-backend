@@ -84,12 +84,12 @@ model Shop {
   description String
   logo        String     @default("https://thumbs.dreamstime.com/b/online-shop-vector-logo-business-online-shop-vector-logo-business-illustration-design-139333744.jpg")
   banner      String     @default("https://t3.ftcdn.net/jpg/03/65/52/86/360_F_365528663_miV08QzGGVLqhRRQVQ4B9C9PtoTRJiSv.jpg")
-  vendorId    String     @unique
   status      ShopStatus @default(PENDING)
   isActive    Boolean    @default(true)
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  vendorId    String     @unique
   vendor      Vendor     @relation(fields: [vendorId], references: [id])
   categories  Category[]
   products    Product[]
