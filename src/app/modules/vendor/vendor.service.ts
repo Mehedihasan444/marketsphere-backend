@@ -67,12 +67,12 @@ const getAllVendorsFromDB = async (params: any, options: any) => {
 };
 
 // Get a single Vendor from the database
-const getSingleVendorFromDB = async (id: string) => {
+const getSingleVendorFromDB = async (email: string) => {
   const vendor = await prisma.vendor.findUniqueOrThrow({
-    where: { id },
+    where: { email },
     include: {
       user: true,
-      // shop: true
+      shop: true
     },
   });
   return vendor;

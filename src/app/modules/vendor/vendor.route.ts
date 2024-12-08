@@ -9,7 +9,7 @@ const router = Router();
 router.get("/", auth(Role.ADMIN), VendorControllers.getAllVendors);
 
 // Get a vendor by ID
-router.get("/:id", auth(Role.ADMIN), VendorControllers.getSingleVendor);
+router.get("/:email", auth(Role.ADMIN,Role.VENDOR), VendorControllers.getSingleVendor);
 
 // Update a vendor by ID
 router.put("/:id", auth(Role.ADMIN), VendorControllers.updateVendor);

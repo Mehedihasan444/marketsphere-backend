@@ -20,7 +20,7 @@ const getAllVendors = catchAsync(async (req, res) => {
 });
 
 const getSingleVendor = catchAsync(async (req, res) => {
-  const vendor = await VendorServices.getSingleVendorFromDB(req.params.id);
+  const vendor = await VendorServices.getSingleVendorFromDB(req.params.email);
 
   sendResponse(res, {
     success: true,

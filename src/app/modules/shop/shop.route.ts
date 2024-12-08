@@ -1,0 +1,34 @@
+import express from "express";
+import auth from "../../middlewares/auth";
+import { Role } from "@prisma/client";
+import validateRequest from "../../middlewares/validateRequest";
+import { ShopControllers } from "./shop.controller";
+
+const router = express.Router();
+
+export const ShopRoutes = router;
+
+// Route to create a new Shop (only accessible by Vendors)
+router.post(
+  "/",
+  auth(Role.VENDOR),
+  //   validateRequest(shopValidationSchema.createShopValidationSchema),
+  ShopControllers.createShop
+);
+
+// Route to get all Shops (accessible by Admins and Customers)
+router.get("/", auth(Role.ADMIN, Role.CUSTOMER,Role.VENDOR), ShopControllers.getAllShops);
+
+// Route to update a Shop (only accessible by Vendors)
+router.put(
+  "/:id",
+  auth(Role.VENDOR),
+  //   validateRequest(shopValidationSchema.updateShopValidationSchema),
+  ShopControllers.updateShop
+);
+
+// Route to get a single Shop (publicly accessible)
+router.get("/:id", ShopControllers.getSingleShop);
+
+// Route to delete a Shop (only accessible by Admins)
+router.delete("/:id", auth(Role.ADMIN), ShopControllers.deleteShop);
