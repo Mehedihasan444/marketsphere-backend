@@ -7,18 +7,20 @@ export const createProductSchema = z.object({
     description: z.string().min(1, "Product description is required."),
     price: z.number().positive("Price must be greater than zero."),
     images: z
-      .array(z.string().url("Each image must be a valid URL."))
-      .nonempty("At least one image is required."),
+      .array(z.string())
+      .nonempty("At least one image is required.")
+      .optional(),
     discount: z
       .number()
       .min(0, "Discount must be a non-negative number.")
-      .max(100, "Discount cannot exceed 100%."),
+      .max(100, "Discount cannot exceed 100%.")
+      .optional(),
     quantity: z
       .number()
       .int("Quantity must be an integer.")
       .nonnegative("Quantity cannot be negative."),
-    categoryId: z.string().uuid("Invalid category ID."),
-    shopId: z.string().uuid("Invalid shop ID."),
+    categoryId: z.string(),
+    shopId: z.string(),
   }),
 });
 

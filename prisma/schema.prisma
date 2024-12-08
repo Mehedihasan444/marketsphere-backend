@@ -127,8 +127,8 @@ model Product {
   rating      Float      @default(0)
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  flashSaleId String
-  flashSale   FlashSale  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
+  flashSaleId String?
+  flashSale   FlashSale?  @relation(fields: [flashSaleId], references: [id], onDelete: Cascade)
   shopId      String
   shop        Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
   isDeleted   Boolean    @default(false)

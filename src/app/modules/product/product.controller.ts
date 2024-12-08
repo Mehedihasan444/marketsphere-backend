@@ -5,6 +5,7 @@ import { ProductFilterableFields } from "./product.constant";
 import { ProductServices } from "./product.service";
 
 const createProduct = catchAsync(async (req, res) => {
+
     const product = await ProductServices.createProduct(req.files,req.body);
   
     sendResponse(res, {
@@ -18,8 +19,8 @@ const createProduct = catchAsync(async (req, res) => {
   const getAllProducts = catchAsync(async (req, res) => {
     const filters = pick(req.query, ProductFilterableFields);
     const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-    console.log(options);
-  
+ 
+
     const products = await ProductServices.getAllProductsFromDB(filters, options);
   
     sendResponse(res, {

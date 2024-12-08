@@ -4,10 +4,11 @@ import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createProduct = async (files: any, payload: Product) => {
+
   if (files) {
-    const { images } = files;
+    const images  = files;
     const imageUrls = await Promise.all(
-      images.map(async (image: any) => {
+      images?.map(async (image: any) => {
         const imageName = image?.originalname;
         const path = image?.path;
         const { secure_url } = await sendImageToCloudinary(imageName, path);
