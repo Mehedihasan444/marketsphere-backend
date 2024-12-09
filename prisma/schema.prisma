@@ -135,12 +135,12 @@ model Shop {
   description String
   logo        String     @default("https://thumbs.dreamstime.com/b/online-shop-vector-logo-business-online-shop-vector-logo-business-illustration-design-139333744.jpg")
   banner      String     @default("https://t3.ftcdn.net/jpg/03/65/52/86/360_F_365528663_miV08QzGGVLqhRRQVQ4B9C9PtoTRJiSv.jpg")
-  status      ShopStatus @default(PENDING)
+  status      ShopStatus @default(ACTIVE)
   isActive    Boolean    @default(true)
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  vendorId    String     @unique
+  vendorId    String
   vendor      Vendor     @relation(fields: [vendorId], references: [id])
   products    Product[]
   followers   Follow[]
@@ -170,7 +170,7 @@ model Product {
   description String
   price       Float
   images      String[]
-  discount    Float
+  discount    Float      @default(0)
   quantity    Int
   rating      Float      @default(0)
   categoryId  String
@@ -182,8 +182,8 @@ model Product {
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  
   cartItems   CartItem[]
-
   orderItems OrderItem[]
   reviews    Review[]
 
@@ -320,16 +320,16 @@ model Review {
 }
 
 model BecomeVendorRequest {
-  id        String     @id @default(uuid())
+  id        String                    @id @default(uuid())
   name      String
   email     String
   phone     String
   address   String
   reason    String
-  status    ShopStatus @default(PENDING)
-  isDeleted Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  status    BecomeVendorRequestStatus @default(PENDING)
+  isDeleted Boolean                   @default(false)
+  createdAt DateTime                  @default(now())
+  updatedAt DateTime                  @updatedAt
 
   @@map("becomeVendorRequests")
 }
@@ -356,8 +356,15 @@ enum OrderStatus {
   PENDING
 }
 
-enum ShopStatus {
+enum BecomeVendorRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum ShopStatus {
+  ACTIVE
+  RESTRICTED
+  DELETED
+  SUSPENDED
 }

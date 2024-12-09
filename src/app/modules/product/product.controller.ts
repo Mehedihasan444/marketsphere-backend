@@ -3,7 +3,7 @@ import pick from "../../utils/pick";
 import sendResponse from "../../utils/sendResponse";
 import { ProductFilterableFields } from "./product.constant";
 import { ProductServices } from "./product.service";
-
+import httpStatus from "http-status";
 const createProduct = catchAsync(async (req, res) => {
 
     const product = await ProductServices.createProduct(req.files,req.body);

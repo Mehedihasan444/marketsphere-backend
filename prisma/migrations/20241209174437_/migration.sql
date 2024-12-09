@@ -8,7 +8,10 @@ CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'BLOCKED', 'DELETED', 'SUSPENDED');
 CREATE TYPE "OrderStatus" AS ENUM ('CONFIRMED', 'DELIVERED', 'CANCELLED', 'SHIPPED', 'PENDING');
 
 -- CreateEnum
-CREATE TYPE "ShopStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+CREATE TYPE "BecomeVendorRequestStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "ShopStatus" AS ENUM ('ACTIVE', 'RESTRICTED', 'DELETED', 'SUSPENDED');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -129,7 +132,7 @@ CREATE TABLE "shops" (
     "description" TEXT NOT NULL,
     "logo" TEXT NOT NULL DEFAULT 'https://thumbs.dreamstime.com/b/online-shop-vector-logo-business-online-shop-vector-logo-business-illustration-design-139333744.jpg',
     "banner" TEXT NOT NULL DEFAULT 'https://t3.ftcdn.net/jpg/03/65/52/86/360_F_365528663_miV08QzGGVLqhRRQVQ4B9C9PtoTRJiSv.jpg',
-    "status" "ShopStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "ShopStatus" NOT NULL DEFAULT 'ACTIVE',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -159,7 +162,7 @@ CREATE TABLE "products" (
     "description" TEXT NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
     "images" TEXT[],
-    "discount" DOUBLE PRECISION NOT NULL,
+    "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "quantity" INTEGER NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "categoryId" TEXT NOT NULL,
@@ -298,7 +301,7 @@ CREATE TABLE "becomeVendorRequests" (
     "phone" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "reason" TEXT NOT NULL,
-    "status" "ShopStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "BecomeVendorRequestStatus" NOT NULL DEFAULT 'PENDING',
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -317,9 +320,6 @@ CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "vendors_email_key" ON "vendors"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "shops_vendorId_key" ON "shops"("vendorId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "orders_orderNumber_key" ON "orders"("orderNumber");

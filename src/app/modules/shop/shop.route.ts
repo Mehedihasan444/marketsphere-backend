@@ -19,7 +19,7 @@ router.post(
   ]),
   (req: Request, res: Response, next: NextFunction) => {
     req.body = JSON.parse(req.body.data);
-    
+
     next();
   },
   //   validateRequest(shopValidationSchema.createShopValidationSchema),
