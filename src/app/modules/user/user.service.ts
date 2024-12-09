@@ -76,9 +76,6 @@ const createVendor = async (payload: User & Vendor) => {
       data: {
         name: payload.name,
         email: user.email,
-        shopName: payload.shopName,
-        shopLogo: payload.shopLogo,
-        description: payload.description,
       },
     });
     return vendor;

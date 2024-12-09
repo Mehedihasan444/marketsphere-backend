@@ -61,9 +61,6 @@ CREATE TABLE "customers" (
 CREATE TABLE "vendors" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "shopName" TEXT NOT NULL,
-    "shopLogo" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "profilePhoto" TEXT NOT NULL DEFAULT 'https://cdn-icons-png.flaticon.com/512/3607/3607444.png',
     "phone" TEXT NOT NULL DEFAULT '',
@@ -75,18 +72,69 @@ CREATE TABLE "vendors" (
 );
 
 -- CreateTable
+CREATE TABLE "customerDashboards" (
+    "id" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
+    "totalOrders" INTEGER NOT NULL,
+    "totalSpent" DOUBLE PRECISION NOT NULL,
+    "totalSaved" DOUBLE PRECISION NOT NULL,
+    "totalReviews" INTEGER NOT NULL,
+    "totalProducts" INTEGER NOT NULL,
+    "totalFollows" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "customerDashboards_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "vendorDashboards" (
+    "id" TEXT NOT NULL,
+    "vendorId" TEXT NOT NULL,
+    "totalOrders" INTEGER NOT NULL,
+    "totalEarnings" DOUBLE PRECISION NOT NULL,
+    "totalProducts" INTEGER NOT NULL,
+    "totalCategories" INTEGER NOT NULL,
+    "totalReviews" INTEGER NOT NULL,
+    "averageRating" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "vendorDashboards_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "adminDashboards" (
+    "id" TEXT NOT NULL,
+    "adminId" TEXT NOT NULL,
+    "totalUsers" INTEGER NOT NULL,
+    "totalVendors" INTEGER NOT NULL,
+    "totalCustomers" INTEGER NOT NULL,
+    "totalOrders" INTEGER NOT NULL,
+    "totalRevenue" DOUBLE PRECISION NOT NULL,
+    "totalProducts" INTEGER NOT NULL,
+    "totalCategories" INTEGER NOT NULL,
+    "totalShops" INTEGER NOT NULL,
+    "totalReviews" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "adminDashboards_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "shops" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "logo" TEXT NOT NULL,
-    "banner" TEXT,
-    "vendorId" TEXT NOT NULL,
+    "logo" TEXT NOT NULL DEFAULT 'https://thumbs.dreamstime.com/b/online-shop-vector-logo-business-online-shop-vector-logo-business-illustration-design-139333744.jpg',
+    "banner" TEXT NOT NULL DEFAULT 'https://t3.ftcdn.net/jpg/03/65/52/86/360_F_365528663_miV08QzGGVLqhRRQVQ4B9C9PtoTRJiSv.jpg',
     "status" "ShopStatus" NOT NULL DEFAULT 'PENDING',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "vendorId" TEXT NOT NULL,
 
     CONSTRAINT "shops_pkey" PRIMARY KEY ("id")
 );
@@ -100,7 +148,6 @@ CREATE TABLE "categories" (
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "shopId" TEXT,
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
 );
@@ -114,8 +161,9 @@ CREATE TABLE "products" (
     "images" TEXT[],
     "discount" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
+    "rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "categoryId" TEXT NOT NULL,
-    "flashSaleId" TEXT NOT NULL,
+    "flashSaleId" TEXT,
     "shopId" TEXT NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -237,9 +285,25 @@ CREATE TABLE "reviews" (
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "shopId" TEXT,
+    "shopId" TEXT NOT NULL,
 
     CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "becomeVendorRequests" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "reason" TEXT NOT NULL,
+    "status" "ShopStatus" NOT NULL DEFAULT 'PENDING',
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "becomeVendorRequests_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -276,10 +340,16 @@ ALTER TABLE "customers" ADD CONSTRAINT "customers_email_fkey" FOREIGN KEY ("emai
 ALTER TABLE "vendors" ADD CONSTRAINT "vendors_email_fkey" FOREIGN KEY ("email") REFERENCES "users"("email") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "shops" ADD CONSTRAINT "shops_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "vendors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "customerDashboards" ADD CONSTRAINT "customerDashboards_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "categories" ADD CONSTRAINT "categories_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "shops"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "vendorDashboards" ADD CONSTRAINT "vendorDashboards_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "vendors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "adminDashboards" ADD CONSTRAINT "adminDashboards_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "admins"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "shops" ADD CONSTRAINT "shops_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "vendors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;

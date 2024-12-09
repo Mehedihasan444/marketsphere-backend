@@ -82,12 +82,12 @@ model CustomerDashboard {
   id            String   @id @default(uuid())
   customerId    String
   customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  totalOrders   Int 
-  totalSpent    Float 
-  totalSaved    Float 
-  totalReviews  Int 
-  totalProducts Int 
-  totalFollows  Int 
+  totalOrders   Int
+  totalSpent    Float
+  totalSaved    Float
+  totalReviews  Int
+  totalProducts Int
+  totalFollows  Int
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -98,12 +98,12 @@ model VendorDashboard {
   id              String   @id @default(uuid())
   vendorId        String
   vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  totalOrders     Int 
-  totalEarnings   Float 
-  totalProducts   Int 
-  totalCategories Int 
-  totalReviews    Int 
-  averageRating   Float 
+  totalOrders     Int
+  totalEarnings   Float
+  totalProducts   Int
+  totalCategories Int
+  totalReviews    Int
+  averageRating   Float
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -114,15 +114,15 @@ model AdminDashboard {
   id              String   @id @default(uuid())
   adminId         String
   admin           Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  totalUsers      Int 
-  totalVendors    Int 
-  totalCustomers  Int 
-  totalOrders     Int 
-  totalRevenue    Float 
-  totalProducts   Int 
-  totalCategories Int 
-  totalShops      Int 
-  totalReviews    Int 
+  totalUsers      Int
+  totalVendors    Int
+  totalCustomers  Int
+  totalOrders     Int
+  totalRevenue    Float
+  totalProducts   Int
+  totalCategories Int
+  totalShops      Int
+  totalReviews    Int
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -160,7 +160,6 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   products    Product[]
- 
 
   @@map("categories")
 }
@@ -314,10 +313,25 @@ model Review {
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  Shop       Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  Shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId     String
 
   @@map("reviews")
+}
+
+model BecomeVendorRequest {
+  id        String     @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  address   String
+  reason    String
+  status    ShopStatus @default(PENDING)
+  isDeleted Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("becomeVendorRequests")
 }
 
 enum Role {
