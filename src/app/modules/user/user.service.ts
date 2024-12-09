@@ -299,7 +299,8 @@ const updateMyProfile = async (user: IAuthUser, req: Request) => {
     },
   });
 
-  const { profilePhoto } = req.file as any;
+  const  profilePhoto  = req.file as any;
+
   if (profilePhoto) {
     const uploadToCloudinary = await sendImageToCloudinary(
       profilePhoto.originalname,

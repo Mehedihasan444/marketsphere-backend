@@ -35,13 +35,13 @@ router.get("/", auth(Role.ADMIN), UserControllers.getAllUsers);
 // get my profile
 router.get(
   "/me",
-  auth(Role.SUPER_ADMIN, Role.ADMIN),
+  auth(Role.SUPER_ADMIN, Role.ADMIN, Role.VENDOR, Role.CUSTOMER),
   UserControllers.getMyProfile
 );
 // update my profile
 router.patch(
   "/update-my-profile",
-  auth(Role.SUPER_ADMIN, Role.ADMIN),
+  auth(Role.SUPER_ADMIN, Role.ADMIN, Role.VENDOR, Role.CUSTOMER),
   upload.single("profilePhoto"),
   (req:Request, res:Response, next:NextFunction) => {
     req.body = JSON.parse(req.body.data);
