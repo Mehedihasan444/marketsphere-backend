@@ -22,8 +22,19 @@ const unfollowShop = catchAsync(async (req, res) => {
     data: customers,
   });
 });
+const getFollowedShops = catchAsync(async (req, res) => {
+
+  const customers = await FollowServices.getFollowedShops(req.user.email);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Followed shops retrieved  Successfully",
+    data: customers,
+  });
+});
 
 export const FollowControllers = {
   followShop,
   unfollowShop,
+  getFollowedShops
 };

@@ -15,8 +15,21 @@ const unfollowShop = async (payload: Follow) => {
   });
   return result;
 };
+const getFollowedShops = async (userEmail: string) => {
+  const result = await prisma.customer.findFirst({
+    where: {
+      email: userEmail,
+    },
+    include: {
+      follow: true,
+    },
+  });
+
+  return result?.follow;
+};
 
 export const FollowServices = {
   followShop,
   unfollowShop,
+  getFollowedShops,
 };
