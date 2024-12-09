@@ -14,6 +14,7 @@ import { FlashSaleRoutes } from "../modules/flashSale/flashSale.route";
 import { CouponRoutes } from "../modules/coupon/coupon.route";
 import { ShopRoutes } from "../modules/shop/shop.route";
 import { BecomeVendorRequestRoutes } from "../modules/becomeVendorRequest/becomeVendorRequest.route";
+import { DashboardRoutes } from "../modules/DashBoard/dashboard.route";
 
 const router = Router();
 
@@ -73,6 +74,10 @@ const moduleRoutes = [
   {
     path: "/shops",
     route: ShopRoutes,
+  },
+  {
+    path: "/dashboard",
+    route: DashboardRoutes,
   },
   {
     path: "/become-a-vendor",

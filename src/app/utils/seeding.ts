@@ -36,9 +36,14 @@ export const seed = async () => {
             email: user.email,
           },
         });
+        await transactionClient.adminDashboard.create({
+          data: {
+            adminId: admin?.id as string,
+          },
+        });
         return admin;
       });
-      
+
       console.log("Admin created successfully...");
       console.log("Seeding completed...");
     }
@@ -72,6 +77,11 @@ export const seed = async () => {
           data: {
             name: user.name,
             email: user.email,
+          },
+        });
+        await transactionClient.vendorDashboard.create({
+          data: {
+            vendorId: vendor?.id as string,
           },
         });
         return vendor;

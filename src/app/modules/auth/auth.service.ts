@@ -44,6 +44,11 @@ const registerUser = async (payload: User) => {
         email: user.email,
       },
     });
+    await transactionClient.customerDashboard.create({
+      data: {
+        customerId: customer?.id as string,
+      },
+    });
     return customer;
   });
 
@@ -55,7 +60,7 @@ const loginUser = async (payload: TLoginUser) => {
   const user = await prisma.user.findFirst({
     where: {
       email: payload.email,
-    }
+    },
   });
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, "This user is not exist!");

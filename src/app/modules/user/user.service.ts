@@ -32,6 +32,11 @@ const createAdmin = async (payload: User & Admin) => {
         email: user.email,
       },
     });
+    await transactionClient.adminDashboard.create({
+      data: {
+        adminId: admin?.id as string,
+      },
+    });
     return admin;
   });
 
@@ -55,6 +60,11 @@ const createCustomer = async (payload: User & Customer) => {
         email: user.email,
       },
     });
+    await transactionClient.customerDashboard.create({
+      data: {
+        customerId: customer?.id as string,
+      },
+    });
     return customer;
   });
 
@@ -76,6 +86,11 @@ const createVendor = async (payload: User & Vendor) => {
       data: {
         name: payload.name,
         email: user.email,
+      },
+    });
+    await transactionClient.vendorDashboard.create({
+      data: {
+        vendorId: vendor?.id as string,
       },
     });
     return vendor;
@@ -196,8 +211,14 @@ const changeProfileStatus = async (
     };
 
     const currentRole = isExist.role;
-    if (currentRole && currentRole !== Role.SUPER_ADMIN && roleModels[currentRole]) {
-      const modelName = roleModels[currentRole as keyof typeof roleModels] as keyof typeof prisma;
+    if (
+      currentRole &&
+      currentRole !== Role.SUPER_ADMIN &&
+      roleModels[currentRole]
+    ) {
+      const modelName = roleModels[
+        currentRole as keyof typeof roleModels
+      ] as keyof typeof prisma;
       await (prisma[modelName as keyof typeof prisma] as any).delete({
         where: {
           email: isExist.email,
@@ -299,7 +320,7 @@ const updateMyProfile = async (user: IAuthUser, req: Request) => {
     },
   });
 
-  const  profilePhoto  = req.file as any;
+  const profilePhoto = req.file as any;
 
   if (profilePhoto) {
     const uploadToCloudinary = await sendImageToCloudinary(

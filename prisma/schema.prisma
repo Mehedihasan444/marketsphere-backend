@@ -79,33 +79,31 @@ model Vendor {
 }
 
 model CustomerDashboard {
-  id            String   @id @default(uuid())
-  customerId    String
-  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  totalOrders   Int
-  totalSpent    Float
-  totalSaved    Float
-  totalReviews  Int
-  totalProducts Int
-  totalFollows  Int
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  totalOrders  Int      @default(0)
+  totalSpent   Float    @default(0)
+  totalSaved   Float    @default(0)
+  totalReviews Int      @default(0)
+  totalFollows Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("customerDashboards")
 }
 
 model VendorDashboard {
-  id              String   @id @default(uuid())
-  vendorId        String
-  vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  totalOrders     Int
-  totalEarnings   Float
-  totalProducts   Int
-  totalCategories Int
-  totalReviews    Int
-  averageRating   Float
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(uuid())
+  vendorId      String
+  vendor        Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  totalOrders   Int      @default(0)
+  totalEarnings Float    @default(0)
+  totalProducts Int      @default(0)
+  totalReviews  Int      @default(0)
+  averageRating Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("vendorDashboards")
 }
@@ -114,15 +112,15 @@ model AdminDashboard {
   id              String   @id @default(uuid())
   adminId         String
   admin           Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  totalUsers      Int
-  totalVendors    Int
-  totalCustomers  Int
-  totalOrders     Int
-  totalRevenue    Float
-  totalProducts   Int
-  totalCategories Int
-  totalShops      Int
-  totalReviews    Int
+  totalUsers      Int      @default(0)
+  totalVendors    Int      @default(0)
+  totalCustomers  Int      @default(0)
+  totalOrders     Int      @default(0)
+  totalRevenue    Float    @default(0)
+  totalProducts   Int      @default(0)
+  totalCategories Int      @default(0)
+  totalShops      Int      @default(0)
+  totalReviews    Int      @default(0)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -182,8 +180,8 @@ model Product {
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  
-  cartItems   CartItem[]
+
+  cartItems  CartItem[]
   orderItems OrderItem[]
   reviews    Review[]
 
