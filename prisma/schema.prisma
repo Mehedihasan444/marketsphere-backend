@@ -58,6 +58,7 @@ model Customer {
   cart              Cart[]
   follow            Follow[]
   CustomerDashboard CustomerDashboard[]
+  Wishlist          Wishlist[]
 
   @@map("customers")
 }
@@ -181,9 +182,10 @@ model Product {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  reviews    Review[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  reviews      Review[]
+  WishlistItem WishlistItem[]
 
   @@map("products")
 }
@@ -197,6 +199,43 @@ model Cart {
   updatedAt  DateTime   @updatedAt
 
   @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("cartItems")
+}
+
+model Wishlist {
+  id           String         @id @default(uuid())
+  customerId   String
+  customer     Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  WishlistItem WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("wishlistItems")
 }
 
 model Follow {
@@ -269,19 +308,6 @@ model CouponItem {
   updatedAt  DateTime @updatedAt
 
   @@map("couponItems")
-}
-
-model CartItem {
-  id        String   @id @default(uuid())
-  cartId    String
-  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  quantity  Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("cartItems")
 }
 
 model FlashSale {

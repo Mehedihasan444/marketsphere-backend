@@ -184,6 +184,40 @@ CREATE TABLE "carts" (
 );
 
 -- CreateTable
+CREATE TABLE "cartItems" (
+    "id" TEXT NOT NULL,
+    "cartId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "cartItems_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "wishlists" (
+    "id" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "wishlists_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "wishlistItems" (
+    "id" TEXT NOT NULL,
+    "wishlistId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "wishlistItems_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "follows" (
     "id" TEXT NOT NULL,
     "customerId" TEXT NOT NULL,
@@ -246,18 +280,6 @@ CREATE TABLE "couponItems" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "couponItems_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "cartItems" (
-    "id" TEXT NOT NULL,
-    "cartId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "cartItems_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -362,6 +384,21 @@ ALTER TABLE "products" ADD CONSTRAINT "products_shopId_fkey" FOREIGN KEY ("shopI
 ALTER TABLE "carts" ADD CONSTRAINT "carts_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "cartItems" ADD CONSTRAINT "cartItems_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "carts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cartItems" ADD CONSTRAINT "cartItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "wishlistItems" ADD CONSTRAINT "wishlistItems_wishlistId_fkey" FOREIGN KEY ("wishlistId") REFERENCES "wishlists"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "wishlistItems" ADD CONSTRAINT "wishlistItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "follows" ADD CONSTRAINT "follows_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -387,12 +424,6 @@ ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_couponId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "cartItems" ADD CONSTRAINT "cartItems_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "carts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "cartItems" ADD CONSTRAINT "cartItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;

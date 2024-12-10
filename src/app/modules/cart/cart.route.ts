@@ -13,12 +13,12 @@ export const CartRoutes = router;
 router.post(
   "/",
   auth(Role.CUSTOMER),
-  validateRequest(cartValidationSchema.addCartValidationSchema),
+  // validateRequest(cartValidationSchema.addCartValidationSchema),
   CartControllers.addToCart
 );
 
 // Route to get all items in the cart for the logged-in user (accessible by authenticated users)
-router.get("/:id", auth(Role.CUSTOMER), CartControllers.getCartItems);
+router.get("/", auth(Role.CUSTOMER), CartControllers.getCartItems);
 
 // Route to update a cart item (e.g., change quantity, remove item) (accessible by authenticated users)
 router.put(

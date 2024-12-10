@@ -65,6 +65,16 @@ const createCustomer = async (payload: User & Customer) => {
         customerId: customer?.id as string,
       },
     });
+    await transactionClient.cart.create({
+      data: {
+        customerId: customer?.id as string,
+      },
+    });
+    await transactionClient.wishlist.create({
+      data: {
+        customerId: customer?.id as string,
+      },
+    });
     return customer;
   });
 

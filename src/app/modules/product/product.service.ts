@@ -4,9 +4,8 @@ import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createProduct = async (files: any, payload: Product) => {
-
   if (files) {
-    const images  = files;
+    const images = files;
     const imageUrls = await Promise.all(
       images?.map(async (image: any) => {
         const imageName = image?.originalname;
@@ -17,9 +16,9 @@ const createProduct = async (files: any, payload: Product) => {
     );
     payload.images = imageUrls;
   }
-console.log(payload)
+
   const result = await prisma.product.create({
-    data: {...payload},
+    data: { ...payload },
   });
   return result;
 };
@@ -67,6 +66,9 @@ const getAllProductsFromDB = async (params: any, options: any) => {
     include: {
       category: true,
       shop: true,
+      cartItems: true,
+      orderItems: true,
+      reviews: true,
     },
   });
 
@@ -86,7 +88,13 @@ const getAllProductsFromDB = async (params: any, options: any) => {
 
 const getSingleProductFromDB = async (id: string) => {
   const product = await prisma.product.findUniqueOrThrow({
-    where: { id },
+    where: { id },include: {
+      category: true,
+      shop: true,
+      cartItems: true,
+      orderItems: true,
+      reviews: true
+    }
   });
 
   return product;

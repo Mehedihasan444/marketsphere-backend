@@ -1,37 +1,46 @@
-import {  CartItem } from "@prisma/client";
+import { CartItem } from "@prisma/client";
 import prisma from "../../config/prisma";
 
 const addToCart = async (payload: any) => {
-  const { customerId } = payload;
-  const isExist = await prisma.cart.findFirst({
+  const customer = await prisma.customer.findFirstOrThrow({
+    where: {
+      email: payload.email,
+    },
+  });
+  const customerId = customer.id;
+  const getCart = await prisma.cart.findFirstOrThrow({
     where: {
       customerId,
     },
   });
-  if (isExist) {
-    payload.cartId = isExist?.id;
-  }
-  if (!isExist) {
-    const cartItem = await prisma.cart.create({
-      data: {
-        customerId,
-      },
-    });
-    payload.cartId = cartItem.id;
-  }
+
+  const info = {
+    productId: payload.productId,
+    cartId: getCart.id,
+    quantity: payload?.quantity || 1,
+  };
+
   const cart = await prisma.cartItem.create({
-    data: payload,
+    data: info,
   });
   return cart;
 };
 
-const getCartItems = async (customerId: string) => {
-  const carts = await prisma.cart.findFirst({
+const getCartItems = async (email: string) => {
+  const customer = await prisma.customer.findFirstOrThrow({
     where: {
-      customerId,
+      email,
     },
   });
-  return carts;
+  const carts = await prisma.cart.findFirst({
+    where: {
+      customerId: customer.id,
+    },
+    include: {
+      cartItems: { include: { product: true } },
+    },
+  });
+  return carts?.cartItems;
 };
 
 const updateCartItem = async (
@@ -60,7 +69,7 @@ const removeCartItem = async (cartItemId: string) => {
 const clearCart = async (cartId: string) => {
   await prisma.cartItem.deleteMany({
     where: {
-        cartId,
+      cartId,
     },
   });
 };
