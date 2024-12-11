@@ -54,11 +54,11 @@ model Customer {
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   order             Order[]
-  review            Review[]
   cart              Cart[]
   follow            Follow[]
-  CustomerDashboard CustomerDashboard[]
+  customerDashboard CustomerDashboard[]
   Wishlist          Wishlist[]
+  reviewItems       ReviewItem[]
 
   @@map("customers")
 }
@@ -185,7 +185,7 @@ model Product {
   cartItems    CartItem[]
   orderItems   OrderItem[]
   reviews      Review[]
-  WishlistItem WishlistItem[]
+  wishlistItem WishlistItem[]
 
   @@map("products")
 }
@@ -327,20 +327,32 @@ model FlashSale {
 }
 
 model Review {
+  id          String       @id @default(uuid())
+  productId   String
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  isDeleted   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  Shop        Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  reviewItems ReviewItem[]
+
+  @@map("reviews")
+}
+
+model ReviewItem {
   id         String   @id @default(uuid())
+  reviewId   String
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  productId  String
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   rating     Float
   comment    String
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  Shop       Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId     String
 
-  @@map("reviews")
+  @@map("reviewItems")
 }
 
 model BecomeVendorRequest {

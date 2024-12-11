@@ -16,10 +16,19 @@ const createProduct = async (files: any, payload: Product) => {
     );
     payload.images = imageUrls;
   }
-
-  const result = await prisma.product.create({
-    data: { ...payload },
+  const result = await prisma.$transaction(async (tx) => {
+    const product = await tx.product.create({
+      data: { ...payload },
+    });
+    await tx.review.create({
+      data: {
+        shopId: product.shopId,
+        productId: product.id,
+      },
+    });
+    return product;
   });
+
   return result;
 };
 
@@ -88,13 +97,14 @@ const getAllProductsFromDB = async (params: any, options: any) => {
 
 const getSingleProductFromDB = async (id: string) => {
   const product = await prisma.product.findUniqueOrThrow({
-    where: { id },include: {
+    where: { id },
+    include: {
       category: true,
       shop: true,
       cartItems: true,
       orderItems: true,
-      reviews: true
-    }
+      reviews: true,
+    },
   });
 
   return product;
