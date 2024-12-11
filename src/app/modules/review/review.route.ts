@@ -17,11 +17,17 @@ router.post(
   ReviewControllers.createReview
 );
 
-// Route to get all categories (publicly accessible)
+// Route to get all reviews (publicly accessible)
 router.get(
   "/",
   auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
   ReviewControllers.getAllReviews
+);
+// Route to get all reviews (publicly accessible)
+router.get(
+  "/product/:id",
+  auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
+  ReviewControllers.getProductReviews
 );
 
 // Route to update a Review (only accessible by Admins)

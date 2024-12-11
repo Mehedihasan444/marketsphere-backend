@@ -88,6 +88,16 @@ const getAllReviewsFromDB = async (
   };
 };
 
+const getProductReviews = async (id: string) => {
+  const Review = await prisma.review.findFirstOrThrow({
+    where: { productId: id },
+    include: {
+      product: true,
+    },
+  });
+
+  return Review;
+};
 const getSingleReviewFromDB = async (id: string) => {
   const Review = await prisma.review.findUniqueOrThrow({
     where: { id },
@@ -128,4 +138,5 @@ export const ReviewServices = {
   getSingleReviewFromDB,
   deleteReviewFromDB,
   updateReview,
+  getProductReviews,
 };
