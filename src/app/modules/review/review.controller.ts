@@ -3,7 +3,7 @@ import pick from "../../utils/pick";
 import sendResponse from "../../utils/sendResponse";
 import { ReviewFilterableFields } from "./review.constant";
 import { ReviewServices } from "./review.service";
-
+import httpStatus from "http-status";
 const createReview = catchAsync(async (req, res) => {
   const Review = await ReviewServices.createReview(req.body);
 
@@ -34,7 +34,8 @@ const getAllReviews = catchAsync(async (req, res) => {
 });
 
 const getProductReviews = catchAsync(async (req, res) => {
-  const Review = await ReviewServices.getSingleReviewFromDB(req.params.id);
+
+  const Review = await ReviewServices.getProductReviews(req.params.id);
 
   sendResponse(res, {
     success: true,

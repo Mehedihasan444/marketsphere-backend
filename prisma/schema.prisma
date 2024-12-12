@@ -184,7 +184,7 @@ model Product {
 
   cartItems    CartItem[]
   orderItems   OrderItem[]
-  reviews      Review[]
+  reviews      Review?
   wishlistItem WishlistItem[]
 
   @@map("products")
@@ -328,7 +328,7 @@ model FlashSale {
 
 model Review {
   id          String       @id @default(uuid())
-  productId   String
+  productId   String       @unique
   product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   isDeleted   Boolean      @default(false)
   createdAt   DateTime     @default(now())
