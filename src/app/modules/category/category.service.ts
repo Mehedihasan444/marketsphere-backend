@@ -4,11 +4,10 @@ import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createCategory = async (file: any, payload: Category) => {
-  console.log(file, payload);
-  if (file?.image) { 
+  if (file) {
     const image = await sendImageToCloudinary(
-      file.image.originalname,
-      file.image.path
+      file.originalname,
+      file.path
     );
     payload.image = image.secure_url as string;
   }
@@ -53,11 +52,11 @@ const getAllCategoriesFromDB = async (params: any, options: any) => {
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },
   });
 
   const total = await prisma.category.count({
@@ -95,14 +94,22 @@ const deleteCategoryFromDB = async (categoryId: string) => {
 
 const updateCategory = async (
   categoryId: string,
-  payload: Prisma.CategoryUpdateInput
+  payload: Category,
+  image: any
 ) => {
-  const category = await prisma.category.findUniqueOrThrow({
+
+  const category = await prisma.category.findFirstOrThrow({
     where: { id: categoryId },
   });
-
+  if (image) {
+    const img = await sendImageToCloudinary(
+      image.originalname,
+      image.path
+    );
+    payload.image = img.secure_url as string;
+  }
   const result = await prisma.category.update({
-    where: { id: categoryId },
+    where: { id: category.id },
     data: payload,
   });
   return result;

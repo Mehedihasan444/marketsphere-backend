@@ -5,5 +5,6 @@ export const CategorySearchableFields = [
   
   export const CategoryFilterableFields: string[] = [
     "searchTerm",
+    "noOfProducts",
   ]; // for all filtering
   
