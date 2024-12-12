@@ -47,6 +47,7 @@ const deleteBecomeVendorRequest = catchAsync(async (req, res) => {
   });
 });
 const updateBecomeVendorRequest = catchAsync(async (req, res) => {
+
   const BecomeVendorRequest = await BecomeVendorRequestServices.updateBecomeVendorRequest(
     req.params.id,
     req.body

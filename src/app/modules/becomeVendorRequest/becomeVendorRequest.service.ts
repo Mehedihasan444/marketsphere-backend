@@ -1,4 +1,4 @@
-import { BecomeVendorRequest, Role, ShopStatus } from "@prisma/client";
+import { BecomeVendorRequest, BecomeVendorRequestStatus, Role, ShopStatus } from "@prisma/client";
 import prisma from "../../config/prisma";
 import AppError from "../../errors/AppError";
 import httpStatus from "http-status";
@@ -6,6 +6,7 @@ const InsertBecomeVendorRequest = async (payload: BecomeVendorRequest) => {
   const isExist = await prisma.becomeVendorRequest.findFirst({
     where: {
       email: payload.email,
+      status: BecomeVendorRequestStatus.PENDING,
     },
   });
   if (isExist) {
@@ -50,7 +51,7 @@ const deleteBecomeVendorRequest = async (BecomeVendorRequestId: string) => {
 };
 const updateBecomeVendorRequest = async (
   BecomeVendorRequestId: string,
-  status: {status:ShopStatus}
+  payload: { status: BecomeVendorRequestStatus }
 ) => {
 
   const becomeVendorRequest = await prisma.becomeVendorRequest.findFirstOrThrow(
@@ -60,21 +61,22 @@ const updateBecomeVendorRequest = async (
       },
     }
   );
-  if (status.status === ShopStatus.REJECTED) {
+
+  if (payload.status === BecomeVendorRequestStatus.REJECTED) {
      await prisma.becomeVendorRequest.update({
       where: {
         id: BecomeVendorRequestId,
       },
-      data: status,
+      data: payload,
     });
-  } else if (status.status === ShopStatus.APPROVED) {
+  } else if (payload.status === BecomeVendorRequestStatus.APPROVED) {
      await prisma.$transaction(async (transactionClient) => {
       const updatedBecomeVendorRequest =
         await transactionClient.becomeVendorRequest.update({
           where: {
             id: BecomeVendorRequestId,
           },
-          data: status,
+          data: payload,
         });
 
       // Update the user's role to VENDOR
