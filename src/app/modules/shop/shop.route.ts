@@ -34,9 +34,18 @@ router.get(
 );
 
 // Route to update a Shop (only accessible by Vendors)
-router.put(
+router.patch(
   "/:id",
   auth(Role.VENDOR),
+  upload.fields([
+    { name: "logo", maxCount: 1 }, // Handle `logo` file upload
+    { name: "banner", maxCount: 1 }, // Handle `banner` file upload
+  ]),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+
+    next();
+  },
   //   validateRequest(shopValidationSchema.updateShopValidationSchema),
   ShopControllers.updateShop
 );
@@ -45,4 +54,4 @@ router.put(
 router.get("/:id", ShopControllers.getSingleShop);
 
 // Route to delete a Shop (only accessible by Admins)
-router.delete("/:id", auth(Role.ADMIN), ShopControllers.deleteShop);
+router.delete("/:id", auth(Role.VENDOR,Role.ADMIN,Role.SUPER_ADMIN), ShopControllers.deleteShop);

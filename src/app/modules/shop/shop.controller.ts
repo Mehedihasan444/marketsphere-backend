@@ -53,13 +53,15 @@ const deleteShop = catchAsync(async (req, res) => {
 });
 
 const updateShop = catchAsync(async (req, res) => {
-  await ShopServices.updateShopInDB(req.params.id, req.body);
+  const data=req.body
+  const images=req.files
+ const shop= await ShopServices.updateShopInDB(req.params.id,data,images);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: "Shop updated successfully",
-    data: null,
+    data: shop,
   });
 });
 
