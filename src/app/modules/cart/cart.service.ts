@@ -56,6 +56,7 @@ const updateCartItem = async (
   return result;
 };
 const removeCartItem = async (cartItemId: string) => {
+
   await prisma.cartItem.findUniqueOrThrow({ where: { id: cartItemId } });
 
   const result = await prisma.cartItem.delete({
@@ -67,6 +68,7 @@ const removeCartItem = async (cartItemId: string) => {
 };
 
 const clearCart = async (cartId: string) => {
+  await prisma.cartItem.findFirstOrThrow({ where: {  cartId } });
   await prisma.cartItem.deleteMany({
     where: {
       cartId,

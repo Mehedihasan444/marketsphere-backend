@@ -51,6 +51,7 @@ const removeCartItem = catchAsync(async (req: Request, res: Response) => {
 });
 const clearCart = catchAsync(async (req: Request, res: Response) => {
   const  cartId  = req.params.id;
+  console.log(cartId)
   await CartServices.clearCart(cartId);
 
   sendResponse(res, {
