@@ -3,9 +3,13 @@ import sendResponse from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import pick from "../../utils/pick";
 import { ShopServices } from "./shop.service";
+import { ShopFilterableFields } from "./shop.constant";
 
 const getAllShops = catchAsync(async (req, res) => {
-  const shops = await ShopServices.getAllShopsFromDB();
+  const filters = pick(req.query, ShopFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const shops = await ShopServices.getAllShopsFromDB(filters, options);
 
   sendResponse(res, {
     success: true,
@@ -64,6 +68,18 @@ const updateShop = catchAsync(async (req, res) => {
     data: shop,
   });
 });
+const updateShopStatus = catchAsync(async (req, res) => {
+  const data=req.body
+
+ const shop= await ShopServices.updateShopStatus(req.params.id,data);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Shop status updated successfully",
+    data: shop,
+  });
+});
 
 export const ShopControllers = {
   createShop,
@@ -71,4 +87,5 @@ export const ShopControllers = {
   getSingleShop,
   deleteShop,
   updateShop,
+  updateShopStatus,
 };

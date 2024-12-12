@@ -29,7 +29,7 @@ router.post(
 // Route to get all Shops (accessible by Admins and Customers)
 router.get(
   "/",
-  auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
+  auth(Role.ADMIN,Role.SUPER_ADMIN, Role.CUSTOMER, Role.VENDOR),
   ShopControllers.getAllShops
 );
 
@@ -50,6 +50,7 @@ router.patch(
   ShopControllers.updateShop
 );
 
+router.patch("/:id/status",auth(Role.SUPER_ADMIN,Role.ADMIN), ShopControllers.updateShopStatus);
 // Route to get a single Shop (publicly accessible)
 router.get("/:id", ShopControllers.getSingleShop);
 
