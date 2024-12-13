@@ -9,6 +9,7 @@ export const OrderSearchableFields = [
   export const OrderFilterableFields: string[] = [
     "status",
     "discount",
+    "paymentStatus",
     "searchTerm",
   ]; // for all filtering
   
