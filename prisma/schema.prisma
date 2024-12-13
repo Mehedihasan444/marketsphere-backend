@@ -74,7 +74,8 @@ model Vendor {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   shop            Shop[]
-  VendorDashboard VendorDashboard[]
+  vendorDashboard VendorDashboard[]
+  order           Order[]
 
   @@map("vendors")
 }
@@ -253,18 +254,38 @@ model Follow {
   @@map("follows")
 }
 
-model Order {
-  id          String      @id @default(uuid())
-  customerId  String
-  customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  shopId      String
-  shop        Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  quantity    Int
-  totalAmount Float
-  discount    Float       @default(0)
-  orderNumber String      @unique
-  status      OrderStatus @default(PENDING)
+model Transaction {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount    Float
+  status    String
+  method    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@map("transactions")
+}
+
+enum PaymentStatus {
+  PAID
+  UNPAID
+}
+
+model Order {
+  id                String            @id @default(uuid())
+  customerId        String
+  customer          Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  shopId            String
+  shop              Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  vendorId          String
+  vendor            Vendor            @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  quantity          Int
+  totalAmount       Float
+  discount          Float             @default(0)
+  orderNumber       String            @unique
+  status            OrderStatus       @default(PENDING)
+  paymentStatus     PaymentStatus     @default(UNPAID)
   orderShippingType OrderShippingType
   name              String
   phone             String
@@ -282,6 +303,7 @@ model Order {
   updatedAt         DateTime          @updatedAt
   orderItems        OrderItem[]
   couponItem        CouponItem?
+  transaction       Transaction?
 
   @@map("orders")
 }

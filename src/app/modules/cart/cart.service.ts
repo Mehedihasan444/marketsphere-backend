@@ -1,4 +1,4 @@
-import { CartItem } from "@prisma/client";
+import { CartItem, Role } from "@prisma/client";
 import prisma from "../../config/prisma";
 import AppError from "../../errors/AppError";
 import httpStatus from "http-status";
@@ -28,7 +28,7 @@ const addToCart = async (payload: any) => {
     },
   })
   if (isExist) {
-    throw new AppError(httpStatus.BAD_REQUEST,"Product already in cart");
+    throw new AppError(httpStatus.BAD_REQUEST, "Product already in cart");
   }
   const cart = await prisma.cartItem.create({
     data: info,
@@ -37,6 +37,8 @@ const addToCart = async (payload: any) => {
 };
 
 const getCartItems = async (email: string) => {
+
+ 
   const customer = await prisma.customer.findFirstOrThrow({
     where: {
       email,
@@ -78,7 +80,7 @@ const removeCartItem = async (cartItemId: string) => {
 };
 
 const clearCart = async (cartId: string) => {
-  await prisma.cartItem.findFirstOrThrow({ where: {  cartId } });
+  await prisma.cartItem.findFirstOrThrow({ where: { cartId } });
   await prisma.cartItem.deleteMany({
     where: {
       cartId,

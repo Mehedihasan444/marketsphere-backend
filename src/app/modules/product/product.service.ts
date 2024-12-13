@@ -26,6 +26,7 @@ const createProduct = async (files: any, payload: Product) => {
         productId: product.id,
       },
     });
+    
     return product;
   });
 

@@ -1,6 +1,8 @@
 export const OrderSearchableFields = [
     "orderNumber",
     "quantity",
+    "status",
+    "paymentStatus",
     "totalAmount",
   ];
   

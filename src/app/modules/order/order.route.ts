@@ -20,7 +20,7 @@ router.post(
 // Route to get all orders (only accessible by Admins)
 router.get(
   "/",
-  auth(Role.ADMIN),
+  auth(Role.ADMIN,Role.SUPER_ADMIN, Role.CUSTOMER, Role.VENDOR),
   OrderControllers.getAllOrders
 );
 
