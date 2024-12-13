@@ -254,15 +254,30 @@ model Follow {
   @@map("follows")
 }
 
+enum TransactionMethod {
+  CASH_ON_DELIVERY
+  CREDIT_CARD
+  DEBIT_CARD
+  NET_BANKING
+  UPI
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 model Transaction {
-  id        String   @id @default(uuid())
-  orderId   String   @unique
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  amount    Float
-  status    String
-  method    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String            @id @default(uuid())
+  orderId       String            @unique
+  order         Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount        Float
+  transactionId String
+  status        TransactionStatus @default(PENDING)
+  method        TransactionMethod @default(NET_BANKING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   @@map("transactions")
 }
