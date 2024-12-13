@@ -43,10 +43,21 @@ const getAllProductsFromDB = async (params: any, options: any) => {
       OR: [
         { name: { contains: searchTerm, mode: "insensitive" } },
         { description: { contains: searchTerm, mode: "insensitive" } },
+        { category: { name: { contains: searchTerm, mode: "insensitive" } } }
       ],
     });
   }
-
+  if (filterData.category) {
+    andConditions.push({
+      category: {
+        name: {
+          equals: filterData.category,
+          mode: "insensitive",
+        },
+      },
+    });
+    delete filterData.category;
+  }
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
       AND: Object.keys(filterData).map((key) => ({

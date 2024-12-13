@@ -172,6 +172,9 @@ model Product {
   discount    Float      @default(0)
   quantity    Int
   rating      Float      @default(0)
+  color       String[]   @default([])
+  size        String[]   @default([])
+  features    String[]   @default([])
   categoryId  String
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   flashSaleId String?
@@ -261,13 +264,31 @@ model Order {
   discount    Float       @default(0)
   orderNumber String      @unique
   status      OrderStatus @default(PENDING)
-  isDeleted   Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
-  couponItem  CouponItem?
+
+  orderShippingType OrderShippingType
+  name              String
+  phone             String
+  email             String
+  address           String
+  city              String
+  state             String
+  country           String
+  zipCode           String
+  note              String?
+  appliedCoupon     String?
+  terms             Boolean
+  isDeleted         Boolean           @default(false)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  orderItems        OrderItem[]
+  couponItem        CouponItem?
 
   @@map("orders")
+}
+
+enum OrderShippingType {
+  DELIVERY
+  PICK_UP
 }
 
 model OrderItem {
@@ -348,6 +369,7 @@ model ReviewItem {
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   rating     Float
   comment    String
+  images     String[] @default([])
   isDeleted  Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

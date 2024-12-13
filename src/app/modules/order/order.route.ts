@@ -13,7 +13,7 @@ export const OrderRoutes = router;
 router.post(
   "/",
   auth(Role.CUSTOMER),
-  validateRequest(orderValidationSchema.createOrderValidationSchema),
+  // validateRequest(orderValidationSchema.createOrderValidationSchema),
   OrderControllers.createOrder
 );
 

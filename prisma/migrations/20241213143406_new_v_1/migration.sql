@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "OrderShippingType" AS ENUM ('DELIVERY', 'PICK_UP');
+
+-- CreateEnum
 CREATE TYPE "Role" AS ENUM ('ADMIN', 'SUPER_ADMIN', 'VENDOR', 'CUSTOMER');
 
 -- CreateEnum
@@ -163,6 +166,9 @@ CREATE TABLE "products" (
     "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "quantity" INTEGER NOT NULL,
     "rating" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "color" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "size" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "features" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "categoryId" TEXT NOT NULL,
     "flashSaleId" TEXT,
     "shopId" TEXT NOT NULL,
@@ -188,7 +194,7 @@ CREATE TABLE "cartItems" (
     "id" TEXT NOT NULL,
     "cartId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -238,6 +244,18 @@ CREATE TABLE "orders" (
     "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "orderNumber" TEXT NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
+    "orderShippingType" "OrderShippingType" NOT NULL,
+    "name" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "zipCode" TEXT NOT NULL,
+    "note" TEXT,
+    "appliedCoupon" TEXT,
+    "terms" BOOLEAN NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -301,16 +319,28 @@ CREATE TABLE "flashSales" (
 -- CreateTable
 CREATE TABLE "reviews" (
     "id" TEXT NOT NULL,
-    "customerId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "rating" DOUBLE PRECISION NOT NULL,
-    "comment" TEXT NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "shopId" TEXT NOT NULL,
 
     CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "reviewItems" (
+    "id" TEXT NOT NULL,
+    "reviewId" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
+    "rating" DOUBLE PRECISION NOT NULL,
+    "comment" TEXT NOT NULL,
+    "images" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "reviewItems_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -349,6 +379,9 @@ CREATE UNIQUE INDEX "couponItems_orderId_key" ON "couponItems"("orderId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "couponItems_code_key" ON "couponItems"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "reviews_productId_key" ON "reviews"("productId");
 
 -- AddForeignKey
 ALTER TABLE "admins" ADD CONSTRAINT "admins_email_fkey" FOREIGN KEY ("email") REFERENCES "users"("email") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -426,10 +459,13 @@ ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_couponId_fkey" FOREIGN KEY
 ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "shops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "reviewItems" ADD CONSTRAINT "reviewItems_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "reviews"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "reviewItems" ADD CONSTRAINT "reviewItems_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
