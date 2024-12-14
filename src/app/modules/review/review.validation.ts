@@ -7,14 +7,14 @@ const createReviewValidationSchema = z.object({
         required_error: "Customer Id is required",
       })
       .uuid(),
-    productId: z
+    reviewId: z
       .string({
-        required_error: "Product Id is required",
+        required_error: "Review Id is required",
       })
       .uuid(),
-    shopId: z
+      orderId: z
       .string({
-        required_error: "Shop Id is required",
+        required_error: "Order Id is required",
       })
       .uuid(),
     rating: z

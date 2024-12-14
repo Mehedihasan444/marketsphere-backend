@@ -2,11 +2,24 @@ import { Prisma, Review, ReviewItem, Role } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { paginationHelper } from "../../utils/paginationHelper";
 
-const createReview = async (payload: ReviewItem) => {
-  const result = await prisma.reviewItem.create({
-    data: payload,
-  });
-  return result;
+const createReview = async (payload: ReviewItem & { orderId: string }) => {
+
+  const review = await prisma.$transaction(async (transactionClient) => {
+    const { orderId, ...reviewData } = payload;
+    const review = await transactionClient.reviewItem.create({
+      data: reviewData
+    });
+    const result = await transactionClient.order.update({
+      where: {
+        id: payload.orderId
+      },
+      data: {
+        isReview: true
+      },
+    });
+    return review;
+  })
+  return review;
 };
 
 const getAllReviewsFromDB = async (
@@ -53,7 +66,7 @@ const getAllReviewsFromDB = async (
         where: { email: user.email },
       });
       const shop = await transactionClient.shop.findFirstOrThrow({
-        where: { vendorId: vendor.id },include: { vendor: true },
+        where: { vendorId: vendor.id }, include: { vendor: true },
       });
       const review = await transactionClient.review.findFirstOrThrow({
         where: { shopId: shop.id },
@@ -70,11 +83,13 @@ const getAllReviewsFromDB = async (
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },include:{
+          customer:true,
+        }
   });
 
   const total = await prisma.reviewItem.count({
@@ -92,13 +107,15 @@ const getAllReviewsFromDB = async (
 };
 
 const getProductReviews = async (id: string) => {
- 
+
   const Review = await prisma.product.findFirstOrThrow({
     where: { id },
     include: {
-      reviews: {include:{
-        reviewItems:true
-      }},
+      reviews: {
+        include: {
+          reviewItems: true
+        }
+      },
     },
   });
 

@@ -69,9 +69,11 @@ const getAllOrdersFromDB = async (
 ) => {
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
 
-  const { searchTerm, ...filterData } = params;
+  const { searchTerm,isReview, ...filterData } = params;
+  if(isReview){
+    isReview==="true"?filterData.isReview=true:filterData.isReview=false
+  }
   const andConditions: Prisma.OrderWhereInput[] = [];
-
   if (searchTerm) {
     andConditions.push({
       OR: [
@@ -136,7 +138,12 @@ const getAllOrdersFromDB = async (
       customer: true,
       orderItems: {
         include: {
-          product: true,
+          product: {
+            include: {
+              shop: true,
+              reviews:  true
+            },
+          },
         },
       },
     },
