@@ -31,7 +31,7 @@ const updateOrderSchema = z.object({
     quantity: z.number().int().positive().optional(),
     totalAmount: z.number().positive().optional(),
     orderNumber: z.string().optional(), // This should not be updated
-    status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]).optional(),
+    status: z.enum(["PENDING", "DELIVERED", "CANCELLED","CONFIRMED","SHIPPED"]).optional(),
     isDeleted: z.boolean().optional(),
     orderItems: z
       .array(

@@ -1,4 +1,13 @@
 -- CreateEnum
+CREATE TYPE "TransactionMethod" AS ENUM ('CASH_ON_DELIVERY', 'CREDIT_CARD', 'DEBIT_CARD', 'NET_BANKING', 'UPI');
+
+-- CreateEnum
+CREATE TYPE "TransactionStatus" AS ENUM ('PENDING', 'SUCCESS', 'FAILED');
+
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PAID', 'UNPAID');
+
+-- CreateEnum
 CREATE TYPE "OrderShippingType" AS ENUM ('DELIVERY', 'PICK_UP');
 
 -- CreateEnum
@@ -235,15 +244,31 @@ CREATE TABLE "follows" (
 );
 
 -- CreateTable
+CREATE TABLE "transactions" (
+    "id" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "transactionId" TEXT NOT NULL,
+    "status" "TransactionStatus" NOT NULL DEFAULT 'PENDING',
+    "method" "TransactionMethod" NOT NULL DEFAULT 'NET_BANKING',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "transactions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "orders" (
     "id" TEXT NOT NULL,
     "customerId" TEXT NOT NULL,
     "shopId" TEXT NOT NULL,
+    "vendorId" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "totalAmount" DOUBLE PRECISION NOT NULL,
     "discount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "orderNumber" TEXT NOT NULL,
     "status" "OrderStatus" NOT NULL DEFAULT 'PENDING',
+    "paymentStatus" "PaymentStatus" NOT NULL DEFAULT 'UNPAID',
     "orderShippingType" "OrderShippingType" NOT NULL,
     "name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
@@ -372,6 +397,12 @@ CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 CREATE UNIQUE INDEX "vendors_email_key" ON "vendors"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "follows_customerId_shopId_key" ON "follows"("customerId", "shopId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "transactions_orderId_key" ON "transactions"("orderId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "orders_orderNumber_key" ON "orders"("orderNumber");
 
 -- CreateIndex
@@ -438,10 +469,16 @@ ALTER TABLE "follows" ADD CONSTRAINT "follows_customerId_fkey" FOREIGN KEY ("cus
 ALTER TABLE "follows" ADD CONSTRAINT "follows_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "shops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "shops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "orders" ADD CONSTRAINT "orders_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES "vendors"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orderItems" ADD CONSTRAINT "orderItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;

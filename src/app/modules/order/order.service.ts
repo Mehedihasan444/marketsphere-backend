@@ -84,7 +84,7 @@ const getAllOrdersFromDB = async (
       ],
     });
   }
-console.log(filterData)
+
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
       AND: Object.keys(filterData).map((key) => ({
@@ -109,14 +109,14 @@ console.log(filterData)
     whereConditions.customerId = customer.id;
   } else if (user.role === Role.VENDOR) {
     await prisma.$transaction(async (transactionClient) => {
-      const vendor = await transactionClient.vendor.findUniqueOrThrow({
+      const vendor = await transactionClient.vendor.findFirstOrThrow({
         where: { email: user.email },
       });
-      const shop = await transactionClient.shop.findFirstOrThrow({
-        where: { vendorId: vendor.id },
-      });
+      // const shop = await transactionClient.shop.findFirstOrThrow({
+      //   where: { vendorId: vendor.id },
+      // });
 
-      whereConditions.shopId = shop.id;
+      whereConditions.vendorId = vendor.id;
     });
   }
 
@@ -134,7 +134,11 @@ console.log(filterData)
         },
     include: {
       customer: true,
-      orderItems: true,
+      orderItems: {
+        include: {
+          product: true,
+        },
+      },
     },
   });
 
@@ -157,7 +161,11 @@ const getSingleOrderFromDB = async (id: string) => {
     where: { id },
     include: {
       customer: true,
-      orderItems: true,
+      orderItems: {
+        include: {
+          product: true,
+        },
+      },
     },
   });
 
