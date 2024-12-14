@@ -88,6 +88,13 @@ const getSingleShopFromDB = async (id: string) => {
   const shop = await prisma.shop.findUniqueOrThrow({
     where: {
       id: id,
+    }, include: {
+      vendor: true,
+      products: true,
+      followers: true,
+      reviews: true,
+      order: true,
+      coupon: true,
     },
   });
   return shop;
@@ -107,7 +114,7 @@ const deleteShopFromDB = async (id: string) => {
   return shop;
 };
 
-const updateShopInDB = async (id: string, payload: Partial<Shop>,images:any) => {
+const updateShopInDB = async (id: string, payload: Partial<Shop>, images: any) => {
   await prisma.shop.findUniqueOrThrow({
     where: {
       id: id,
@@ -146,7 +153,7 @@ const updateShopStatus = async (id: string, payload: any) => {
     where: {
       id: id,
     },
-    data: {status:payload.shopStatus} , 
+    data: { status: payload.shopStatus },
   });
   return shop;
 }
