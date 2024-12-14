@@ -27,7 +27,6 @@ const makePayment = async (paymentData: any) => {
 const paymentConfirmation = async ({ transactionId, orderId, }: { transactionId: string; orderId: string; }) => {
     let payment;
     const verifyResponse = await verifyPayment(transactionId);
-    console.log(verifyResponse, "verifyResponse");
     if (verifyResponse && verifyResponse.pay_status === "Successful") {
         const payment = await prisma.$transaction(async (tx) => {
 
@@ -53,13 +52,8 @@ const paymentConfirmation = async ({ transactionId, orderId, }: { transactionId:
 
     return payment;
 };
-const getAllPaymentsFromDB = async (query: Record<string, unknown>) => {
-   
 
-    
-};
 export const paymentService = {
     makePayment,
     paymentConfirmation,
-    getAllPaymentsFromDB
 }

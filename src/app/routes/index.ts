@@ -16,6 +16,7 @@ import { ShopRoutes } from "../modules/shop/shop.route";
 import { BecomeVendorRequestRoutes } from "../modules/becomeVendorRequest/becomeVendorRequest.route";
 import { DashboardRoutes } from "../modules/DashBoard/dashboard.route";
 import { PaymentRoutes } from "../modules/payment/payment.route";
+import { TransactionRoutes } from "../modules/transaction/transaction.route";
 
 const router = Router();
 
@@ -87,6 +88,10 @@ const moduleRoutes = [
   {
     path: "/become-a-vendor",
     route: BecomeVendorRequestRoutes,
+  },
+  {
+    path: "/transactions",
+    route: TransactionRoutes,
   },
 ];
 

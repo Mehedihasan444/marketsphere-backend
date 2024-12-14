@@ -5,7 +5,6 @@ import { paymentControllers } from './payment.controller';
 const router = express.Router();
 
 router.post('/',auth(Role.CUSTOMER), paymentControllers.makePayment);
-router.get("/", paymentControllers.getAllPayments);
 router.post("/confirmation", paymentControllers.paymentConfirmation);
 router.post("/failed", paymentControllers.paymentFailed);
 
