@@ -60,7 +60,11 @@ const getFollowedShops = async (userEmail: string) => {
       email: userEmail,
     },
     include: {
-      follow: true,
+      follow: {
+        include: {
+          shop: true,
+        },
+      },
     },
   });
 
