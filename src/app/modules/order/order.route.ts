@@ -27,7 +27,7 @@ router.get(
 // Route to update an order (only accessible by Admins)
 router.put(
   "/:id",
-  auth(Role.ADMIN),
+  auth(Role.ADMIN, Role.SUPER_ADMIN, Role.CUSTOMER, Role.VENDOR),
   validateRequest(orderValidationSchema.updateOrderValidationSchema),
   OrderControllers.updateOrder
 );
