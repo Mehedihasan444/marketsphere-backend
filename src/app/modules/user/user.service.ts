@@ -146,11 +146,11 @@ const getAllUsersFromDB = async (params: any, options: any) => {
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },
     select: {
       id: true,
       email: true,
@@ -307,6 +307,12 @@ const getMyProfile = async (user: IAuthUser) => {
       },
       include: {
         user: true,
+        order: true,
+        cart: true,
+        follow: true,
+        customerDashboard: true,
+        Wishlist: true,
+        reviewItems: true,
       },
     });
   } else if (userInfo.role === Role.VENDOR) {

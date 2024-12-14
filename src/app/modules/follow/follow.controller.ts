@@ -1,7 +1,7 @@
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { FollowServices } from "./follow.service";
-
+import httpStatus from "http-status";
 const followShop = catchAsync(async (req, res) => {
   const data = req.body;
   const customers = await FollowServices.followShop(data);
