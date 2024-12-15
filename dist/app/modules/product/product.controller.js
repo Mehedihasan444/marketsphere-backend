@@ -39,6 +39,31 @@ const getAllProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         data: products,
     });
 }));
+const getAllVendorProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const filters = (0, pick_1.default)(req.query, product_constant_1.ProductFilterableFields);
+    const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+    const user = req === null || req === void 0 ? void 0 : req.user;
+    const products = yield product_service_1.ProductServices.getAllVendorProducts(filters, options, user);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Products Retrieved Successfully",
+        data: products,
+    });
+}));
+const getPriorityProducts = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const filters = (0, pick_1.default)(req.query, product_constant_1.ProductFilterableFields);
+    const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+    const user = req === null || req === void 0 ? void 0 : req.user;
+    console.log(user);
+    const products = yield product_service_1.ProductServices.getPriorityProducts(filters, options, user);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Products Retrieved Successfully",
+        data: products,
+    });
+}));
 const getSingleProduct = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const product = yield product_service_1.ProductServices.getSingleProductFromDB(req.params.id);
     (0, sendResponse_1.default)(res, {
@@ -73,4 +98,6 @@ exports.ProductControllers = {
     getSingleProduct,
     deleteProduct,
     updateProduct,
+    getAllVendorProducts,
+    getPriorityProducts
 };

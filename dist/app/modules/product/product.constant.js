@@ -6,6 +6,7 @@ exports.ProductSearchableFields = [
     "description",
     "category",
     "brand",
+    "price",
 ];
 exports.ProductFilterableFields = [
     "category",

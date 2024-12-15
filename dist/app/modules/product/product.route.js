@@ -20,6 +20,10 @@ router.post("/", (0, auth_1.default)(client_1.Role.VENDOR, client_1.Role.ADMIN),
 }, (0, validateRequest_1.default)(product_validation_1.productValidationSchema.createProductValidationSchema), product_controller_1.ProductControllers.createProduct);
 // Route to get all products (publicly accessible)
 router.get("/", product_controller_1.ProductControllers.getAllProducts);
+// Route to get all vendor products (publicly accessible)
+router.get("/vendor", (0, auth_1.default)(client_1.Role.VENDOR), product_controller_1.ProductControllers.getAllVendorProducts);
+// get priority based products
+router.get("/priority", (0, auth_1.default)(client_1.Role.CUSTOMER, client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.VENDOR), product_controller_1.ProductControllers.getPriorityProducts);
 // Route to update a product (only accessible by the Vendor who created it or Admin)
 router.put("/:id", (0, auth_1.default)(client_1.Role.VENDOR, client_1.Role.ADMIN), (0, validateRequest_1.default)(product_validation_1.productValidationSchema.updateProductValidationSchema), product_controller_1.ProductControllers.updateProduct);
 // Route to get a single product (publicly accessible)
