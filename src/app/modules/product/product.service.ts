@@ -1,4 +1,4 @@
-import { Prisma, Product } from "@prisma/client";
+import { Prisma, Product, Role } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
@@ -212,6 +212,137 @@ const getAllVendorProducts = async (params: any, options: any, user: any) => {
     data: result,
   };
 };
+const getPriorityProducts = async (params: any, options: any, user: any) => {
+  // Calculate pagination details
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+
+  if (user.role === Role.CUSTOMER) {
+    // Find the customer by their email
+    const customer = await prisma.customer.findUniqueOrThrow({
+      where: { email: user.email },
+    });
+
+
+    // Fetch shops followed by the customer
+    const followedShops = await prisma.follow.findMany({
+      where: {
+        customerId: customer.id,
+      },
+      select: {
+        shopId: true, // Only return shop IDs
+      },
+    });
+
+    // Extract shop IDs from the follow records
+    const followedShopIds = followedShops.map((follow) => follow.shopId);
+
+    let allProducts = [];
+
+    if (followedShopIds.length > 0) {
+      // Fetch products from followed shops
+      const followedShopProducts = await prisma.product.findMany({
+        where: {
+          shopId: {
+            in: followedShopIds, // Filter products belonging to followed shops
+          },
+          isDeleted: false, // Exclude deleted products
+        },
+        orderBy: {
+          createdAt: "desc", // Sort by newest first
+        },
+        include: {
+          shop: true, // Include shop details if needed
+        },
+      });
+
+      // Fetch products from other shops
+      const otherShopProducts = await prisma.product.findMany({
+        where: {
+          shopId: {
+            notIn: followedShopIds, // Exclude products from followed shops
+          },
+          isDeleted: false, // Exclude deleted products
+        },
+        orderBy: {
+          createdAt: "desc", // Sort by newest first
+        },
+        include: {
+          shop: true, // Include shop details if needed
+        },
+      });
+
+      // Combine the two arrays, with followed shop products first
+      allProducts = [...followedShopProducts, ...otherShopProducts];
+    } else {
+      // If the user doesn’t follow any shop, fetch all products
+      allProducts = await prisma.product.findMany({
+        where: {
+          isDeleted: false, // Exclude deleted products
+        },
+        orderBy: {
+          createdAt: "desc", // Sort by newest first
+        },
+        include: {
+          shop: true, // Include shop details if needed
+        },
+      });
+    }
+
+    // Paginate the combined products
+    const paginatedProducts = allProducts.slice(skip, skip + limit);
+
+    // Return paginated data
+    return {
+      meta: {
+        page,
+        limit,
+        total: allProducts.length,
+      },
+      data: paginatedProducts,
+    };
+  } else {
+    // Fetch products with pagination, sorting, and relationships
+    const result = await prisma.product.findMany({
+      where: {
+        isDeleted: false,
+      },
+      skip,
+      take: limit,
+      orderBy:
+        options.sortBy && options.sortOrder
+          ? {
+              [options.sortBy]: options.sortOrder,
+            }
+          : {
+              createdAt: "desc",
+            },
+      include: {
+        category: true,
+        shop: true,
+        cartItems: true,
+        orderItems: true,
+        reviews: true,
+      },
+    });
+
+    // Get the total count of products matching the conditions
+    const total = await prisma.product.count({
+      where: {
+        isDeleted: false,
+      },
+    });
+
+    // Return paginated data
+    return {
+      meta: {
+        page,
+        limit,
+        total,
+      },
+      data: result,
+    };
+  }
+};
 
 const getSingleProductFromDB = async (id: string) => {
   const product = await prisma.product.findUniqueOrThrow({
@@ -265,5 +396,6 @@ export const ProductServices = {
   getSingleProductFromDB,
   deleteProductFromDB,
   updateProduct,
-  getAllVendorProducts
+  getAllVendorProducts,
+  getPriorityProducts
 };

@@ -29,6 +29,8 @@ router.get("/", ProductControllers.getAllProducts);
 // Route to get all vendor products (publicly accessible)
 router.get("/vendor",auth(Role.VENDOR), ProductControllers.getAllVendorProducts);
 
+// get priority based products
+router.get("/priority", auth(Role.CUSTOMER,Role.ADMIN,Role.SUPER_ADMIN,Role.VENDOR),ProductControllers.getPriorityProducts);
 // Route to update a product (only accessible by the Vendor who created it or Admin)
 router.put(
   "/:id",

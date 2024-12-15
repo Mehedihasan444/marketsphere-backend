@@ -44,6 +44,21 @@ const getAllVendorProducts = catchAsync(async (req, res) => {
     data: products,
   });
 });
+const getPriorityProducts= catchAsync(async (req, res) => {
+  const filters = pick(req.query, ProductFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const user = req?.user;
+  console.log(user)
+  const products = await ProductServices.getPriorityProducts(filters, options, user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Products Retrieved Successfully",
+    data: products,
+  });
+});
 const getSingleProduct = catchAsync(async (req, res) => {
   const product = await ProductServices.getSingleProductFromDB(req.params.id);
 
@@ -84,5 +99,6 @@ export const ProductControllers = {
   getSingleProduct,
   deleteProduct,
   updateProduct,
-  getAllVendorProducts
+  getAllVendorProducts,
+  getPriorityProducts
 };
