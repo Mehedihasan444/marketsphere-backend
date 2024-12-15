@@ -3,6 +3,7 @@ export const ProductSearchableFields = [
   "description",
   "category",
   "brand",
+  "price",
 ];
 
 export const ProductFilterableFields: string[] = [

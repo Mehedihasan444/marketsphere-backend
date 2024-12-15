@@ -6,7 +6,6 @@ const sendResponse = (res, data) => {
         statusCode: data === null || data === void 0 ? void 0 : data.statusCode,
         message: Array.isArray(data.data) && data.data.length === 0 ? "No data found." : data.message,
         data: data.data,
-        // Array.isArray(data.data) && data.data.length === 0 ? "Database is empty" : data.data,
         token: data.token
     });
 };

@@ -26,6 +26,9 @@ router.post(
 // Route to get all products (publicly accessible)
 router.get("/", ProductControllers.getAllProducts);
 
+// Route to get all vendor products (publicly accessible)
+router.get("/vendor",auth(Role.VENDOR), ProductControllers.getAllVendorProducts);
+
 // Route to update a product (only accessible by the Vendor who created it or Admin)
 router.put(
   "/:id",

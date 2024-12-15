@@ -26,7 +26,7 @@ const createProduct = async (files: any, payload: Product) => {
         productId: product.id,
       },
     });
-    
+
     return product;
   });
 
@@ -79,11 +79,11 @@ const getAllProductsFromDB = async (params: any, options: any) => {
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },
     include: {
       category: true,
       shop: true,
@@ -97,6 +97,112 @@ const getAllProductsFromDB = async (params: any, options: any) => {
     where: whereConditions,
   });
 
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+const getAllVendorProducts = async (params: any, options: any, user: any) => {
+  // Calculate pagination details
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+
+  // Extract searchTerm and other filter data
+  const { searchTerm, ...filterData } = params;
+  const andConditions: Prisma.ProductWhereInput[] = [];
+
+  // Search products by name, description, or category name
+  if (searchTerm) {
+    andConditions.push({
+      OR: [
+        { name: { contains: searchTerm, mode: "insensitive" } },
+        { description: { contains: searchTerm, mode: "insensitive" } },
+        { category: { name: { contains: searchTerm, mode: "insensitive" } } },
+      ],
+    });
+  }
+
+  // Filter products by category name
+  if (filterData.category) {
+    andConditions.push({
+      category: {
+        name: {
+          equals: filterData.category,
+          mode: "insensitive",
+        },
+      },
+    });
+    delete filterData.category; // Remove 'category' from filterData as it's already processed
+  }
+
+  // Add any remaining filters (e.g., filtering by price, stock, etc.)
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  // Fetch the vendor and their associated shops
+  const vendor = await prisma.vendor.findUnique({
+    where: { email: user.email },
+    include: { shop: true }, // Include shops associated with the vendor
+  });
+
+  // Ensure vendor and shops exist
+  if (!vendor || !vendor.shop || vendor.shop.length === 0) {
+    throw new Error("No shops found for the vendor");
+  }
+
+  // Extract shop IDs
+  const shopIds = vendor.shop.map((shop) => shop.id);
+
+  // Add a condition to filter products by shop IDs
+  andConditions.push({
+    shopId: {
+      in: shopIds, // Use `in` for matching multiple shop IDs
+    },
+  });
+
+  // Combine all conditions
+  const whereConditions: Prisma.ProductWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  // Fetch products with pagination, sorting, and relationships
+  const result = await prisma.product.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+          [options.sortBy]: options.sortOrder,
+        }
+        : {
+          createdAt: "desc",
+        },
+    include: {
+      category: true,
+      shop: true,
+      cartItems: true,
+      orderItems: true,
+      reviews: true,
+    },
+  });
+
+  // Get the total count of products matching the conditions
+  const total = await prisma.product.count({
+    where: whereConditions,
+  });
+
+  // Return paginated data
   return {
     meta: {
       page,
@@ -159,4 +265,5 @@ export const ProductServices = {
   getSingleProductFromDB,
   deleteProductFromDB,
   updateProduct,
+  getAllVendorProducts
 };
