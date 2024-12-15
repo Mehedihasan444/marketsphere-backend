@@ -10,6 +10,62 @@ import prisma from "../../config/prisma";
 import { isJWTIssuedBeforePasswordChanged } from "../../utils/isJWTIssuedBeforePasswordChanged";
 import { Role, User, UserStatus } from "@prisma/client";
 
+// const registerUser = async (payload: User) => {
+//   // checking if the user is exist
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       email: payload.email,
+//     },
+//   });
+
+//   if (user) {
+//     throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
+//   }
+
+//   payload.role = Role.CUSTOMER;
+
+//   //hash password
+//   const hashedPassword = await bcrypt.hash(
+//     payload.password as string,
+//     Number(config.bcrypt_salt_rounds)
+//   );
+
+//   payload.password = hashedPassword;
+//   //create new user
+//   const newUser = await prisma.$transaction(async (transactionClient) => {
+//     const user = await transactionClient.user.create({
+//       data: {
+//         ...payload,
+//       },
+//     });
+//     const customer = await transactionClient.customer.create({
+//       data: {
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//     await transactionClient.customerDashboard.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     await transactionClient.cart.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     await transactionClient.wishlist.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     return customer;
+//   });
+
+//   return newUser;
+// };
+
+
 const registerUser = async (payload: User) => {
   // checking if the user is exist
   const user = await prisma.user.findUnique({
@@ -21,6 +77,37 @@ const registerUser = async (payload: User) => {
   if (user) {
     throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
   }
+if (payload.role===Role.VENDOR) {
+  
+  //hash password
+  const hashedPassword = await bcrypt.hash(
+    payload.password as string,
+    Number(config.bcrypt_salt_rounds)
+  );
+
+  payload.password = hashedPassword;
+  //create new user
+  const newUser = await prisma.$transaction(async (transactionClient) => {
+    const user = await transactionClient.user.create({
+      data: {
+        ...payload,
+      },
+    });
+    const vendor = await transactionClient.vendor.create({
+      data: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+    await transactionClient.vendorDashboard.create({
+      data: {
+        vendorId: vendor?.id as string,
+      },
+    });
+    
+    return vendor;
+  });
+}else{
 
   payload.role = Role.CUSTOMER;
 
@@ -63,6 +150,7 @@ const registerUser = async (payload: User) => {
   });
 
   return newUser;
+}
 };
 
 const loginUser = async (payload: TLoginUser) => {

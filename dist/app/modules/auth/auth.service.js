@@ -23,6 +23,55 @@ const emailSender_1 = require("../../utils/emailSender");
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const isJWTIssuedBeforePasswordChanged_1 = require("../../utils/isJWTIssuedBeforePasswordChanged");
 const client_1 = require("@prisma/client");
+// const registerUser = async (payload: User) => {
+//   // checking if the user is exist
+//   const user = await prisma.user.findUnique({
+//     where: {
+//       email: payload.email,
+//     },
+//   });
+//   if (user) {
+//     throw new AppError(httpStatus.NOT_FOUND, "This user is already exist!");
+//   }
+//   payload.role = Role.CUSTOMER;
+//   //hash password
+//   const hashedPassword = await bcrypt.hash(
+//     payload.password as string,
+//     Number(config.bcrypt_salt_rounds)
+//   );
+//   payload.password = hashedPassword;
+//   //create new user
+//   const newUser = await prisma.$transaction(async (transactionClient) => {
+//     const user = await transactionClient.user.create({
+//       data: {
+//         ...payload,
+//       },
+//     });
+//     const customer = await transactionClient.customer.create({
+//       data: {
+//         name: user.name,
+//         email: user.email,
+//       },
+//     });
+//     await transactionClient.customerDashboard.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     await transactionClient.cart.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     await transactionClient.wishlist.create({
+//       data: {
+//         customerId: customer?.id as string,
+//       },
+//     });
+//     return customer;
+//   });
+//   return newUser;
+// };
 const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // checking if the user is exist
     const user = yield prisma_1.default.user.findUnique({
@@ -33,39 +82,64 @@ const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* ()
     if (user) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, "This user is already exist!");
     }
-    payload.role = client_1.Role.CUSTOMER;
-    //hash password
-    const hashedPassword = yield bcryptjs_1.default.hash(payload.password, Number(config_1.default.bcrypt_salt_rounds));
-    payload.password = hashedPassword;
-    //create new user
-    const newUser = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
-        const user = yield transactionClient.user.create({
-            data: Object.assign({}, payload),
-        });
-        const customer = yield transactionClient.customer.create({
-            data: {
-                name: user.name,
-                email: user.email,
-            },
-        });
-        yield transactionClient.customerDashboard.create({
-            data: {
-                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
-            },
-        });
-        yield transactionClient.cart.create({
-            data: {
-                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
-            },
-        });
-        yield transactionClient.wishlist.create({
-            data: {
-                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
-            },
-        });
-        return customer;
-    }));
-    return newUser;
+    if (payload.role === client_1.Role.VENDOR) {
+        //hash password
+        const hashedPassword = yield bcryptjs_1.default.hash(payload.password, Number(config_1.default.bcrypt_salt_rounds));
+        payload.password = hashedPassword;
+        //create new user
+        const newUser = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+            const user = yield transactionClient.user.create({
+                data: Object.assign({}, payload),
+            });
+            const vendor = yield transactionClient.vendor.create({
+                data: {
+                    name: user.name,
+                    email: user.email,
+                },
+            });
+            yield transactionClient.vendorDashboard.create({
+                data: {
+                    vendorId: vendor === null || vendor === void 0 ? void 0 : vendor.id,
+                },
+            });
+            return vendor;
+        }));
+    }
+    else {
+        payload.role = client_1.Role.CUSTOMER;
+        //hash password
+        const hashedPassword = yield bcryptjs_1.default.hash(payload.password, Number(config_1.default.bcrypt_salt_rounds));
+        payload.password = hashedPassword;
+        //create new user
+        const newUser = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+            const user = yield transactionClient.user.create({
+                data: Object.assign({}, payload),
+            });
+            const customer = yield transactionClient.customer.create({
+                data: {
+                    name: user.name,
+                    email: user.email,
+                },
+            });
+            yield transactionClient.customerDashboard.create({
+                data: {
+                    customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+                },
+            });
+            yield transactionClient.cart.create({
+                data: {
+                    customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+                },
+            });
+            yield transactionClient.wishlist.create({
+                data: {
+                    customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+                },
+            });
+            return customer;
+        }));
+        return newUser;
+    }
 });
 const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // checking if the user is exist

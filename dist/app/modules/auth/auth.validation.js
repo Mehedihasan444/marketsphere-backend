@@ -13,6 +13,7 @@ const registerValidationSchema = zod_1.z.object({
         password: zod_1.z.string({ required_error: 'Password is required' }),
         mobileNumber: zod_1.z.string({ required_error: 'Mobile number is required' }).optional(),
         profilePhoto: zod_1.z.string().optional(),
+        role: zod_1.z.string().optional(),
     }),
 });
 const loginValidationSchema = zod_1.z.object({
