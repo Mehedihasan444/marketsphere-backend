@@ -113,6 +113,102 @@ const createReview = async (payload: ReviewItem & { orderId: string }) => {
 //     data: result,
 //   };
 // };
+// const getAllReviewsFromDB = async (
+//   params: any,
+//   options: any,
+//   userEmail: string
+// ) => {
+//   const { page, limit, skip } = paginationHelper.calculatePagination(options);
+
+//   const { searchTerm, ...filterData } = params;
+//   const andConditions: Prisma.ReviewItemWhereInput[] = [];
+
+//   // Add searchTerm condition
+//   if (searchTerm) {
+//     andConditions.push({
+//       OR: [{ comment: { contains: searchTerm, mode: "insensitive" } }],
+//     });
+//   }
+
+//   // Add filter conditions dynamically
+//   if (Object.keys(filterData).length > 0) {
+//     andConditions.push({
+//       AND: Object.keys(filterData).map((key) => ({
+//         [key]: {
+//           equals: (filterData as any)[key],
+//         },
+//       })),
+//     });
+//   }
+
+//   // Initialize whereConditions
+//   let whereConditions: Prisma.ReviewItemWhereInput& Prisma.ReviewWhereInput=
+//     andConditions.length > 0 ? { AND: andConditions } : {};
+
+//   // Find the user by email
+//   const user = await prisma.user.findUniqueOrThrow({
+//     where: { email: userEmail },
+//   });
+
+//   if (user.role === Role.CUSTOMER) {
+//     // If user is a CUSTOMER, filter reviews by customerId
+//     const customer = await prisma.customer.findUniqueOrThrow({
+//       where: { email: user.email },
+//     });
+//     whereConditions = { ...whereConditions, customerId: customer.id };
+//   } else if (user.role === Role.VENDOR) {
+//     // If user is a VENDOR, filter reviews by shopId(s) associated with the vendor
+//     const vendor = await prisma.vendor.findFirstOrThrow({
+//       where: { email: user.email },
+//     });
+
+//     const shops = await prisma.shop.findMany({
+//       where: { vendorId: vendor.id },
+//       select: { id: true },
+//     });
+
+//     const shopIds = shops.map((shop) => shop.id);
+
+//     if (shopIds.length > 0) {
+//       whereConditions = { ...whereConditions, shopId: { in: shopIds } };
+//     } else {
+//       // Handle case where vendor has no associated shops
+//       whereConditions = { ...whereConditions, shopId: undefined };
+//     }
+//   }
+
+//   // Fetch paginated reviews
+//   const result = await prisma.reviewItem.findMany({
+//     where: whereConditions,
+//     skip,
+//     take: limit,
+//     orderBy:
+//       options.sortBy && options.sortOrder
+//         ? {
+//             [options.sortBy]: options.sortOrder,
+//           }
+//         : {
+//             createdAt: "desc",
+//           },
+//     include: {
+//       customer: true,
+//     },
+//   });
+
+//   // Get total count for pagination
+//   const total = await prisma.reviewItem.count({
+//     where: whereConditions,
+//   });
+
+//   return {
+//     meta: {
+//       page,
+//       limit,
+//       total,
+//     },
+//     data: result,
+//   };
+// };
 const getAllReviewsFromDB = async (
   params: any,
   options: any,
@@ -142,7 +238,7 @@ const getAllReviewsFromDB = async (
   }
 
   // Initialize whereConditions
-  let whereConditions: Prisma.ReviewItemWhereInput& Prisma.ReviewWhereInput=
+  let whereConditions: Prisma.ReviewItemWhereInput & Prisma.ReviewWhereInput =
     andConditions.length > 0 ? { AND: andConditions } : {};
 
   // Find the user by email
@@ -170,10 +266,24 @@ const getAllReviewsFromDB = async (
     const shopIds = shops.map((shop) => shop.id);
 
     if (shopIds.length > 0) {
-      whereConditions = { ...whereConditions, shopId: { in: shopIds } };
+      // Fetch all products for the vendor's shops
+      const products = await prisma.product.findMany({
+        where: { shopId: { in: shopIds } },
+        select: { id: true },
+      });
+
+      const productIds = products.map((product) => product.id);
+
+      // Now filter reviews based on the productIds via the Review model
+      whereConditions = {
+        ...whereConditions,
+        review: {
+          productId: { in: productIds },
+        },
+      };
     } else {
       // Handle case where vendor has no associated shops
-      whereConditions = { ...whereConditions, shopId: undefined };
+      whereConditions = { ...whereConditions, review: { productId: undefined } };
     }
   }
 
@@ -209,6 +319,7 @@ const getAllReviewsFromDB = async (
     data: result,
   };
 };
+
 
 const getProductReviews = async (id: string) => {
 
