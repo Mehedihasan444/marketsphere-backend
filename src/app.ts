@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser";
 import notFound from "./app/middlewares/notFound";
 
 const app: Application = express();
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+// app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(cookieParser());
 
 //parser

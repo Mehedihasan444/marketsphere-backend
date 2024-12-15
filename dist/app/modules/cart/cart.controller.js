@@ -27,8 +27,8 @@ const addToCart = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void
     });
 }));
 const getCartItems = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const customerId = req.params.id;
-    const carts = yield cart_service_1.CartServices.getCartItems(customerId);
+    const user = req.user;
+    const carts = yield cart_service_1.CartServices.getCartItems(user.email);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,
@@ -57,6 +57,7 @@ const removeCartItem = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 }));
 const clearCart = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const cartId = req.params.id;
+    console.log(cartId);
     yield cart_service_1.CartServices.clearCart(cartId);
     (0, sendResponse_1.default)(res, {
         success: true,

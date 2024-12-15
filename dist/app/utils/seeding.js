@@ -48,9 +48,53 @@ const seed = () => __awaiter(void 0, void 0, void 0, function* () {
                         email: user.email,
                     },
                 });
+                yield transactionClient.adminDashboard.create({
+                    data: {
+                        adminId: admin === null || admin === void 0 ? void 0 : admin.id,
+                    },
+                });
                 return admin;
             }));
             console.log("Admin created successfully...");
+            console.log("Seeding completed...");
+        }
+        // at first check if the admin exist of not
+        const vendor = yield prisma_1.default.user.findFirst({
+            where: {
+                role: client_1.Role.VENDOR,
+                email: config_1.default.vendor_email,
+                status: client_1.UserStatus.ACTIVE,
+            },
+        });
+        if (!vendor) {
+            console.log("Seeding started...");
+            //hash password
+            const hashedPassword = yield bcryptjs_1.default.hash(config_1.default.vendor_password, Number(config_1.default.bcrypt_salt_rounds));
+            //create vendor
+            yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+                const user = yield transactionClient.user.create({
+                    data: {
+                        email: config_1.default.vendor_email,
+                        name: "vendor",
+                        password: hashedPassword,
+                        role: client_1.Role.VENDOR,
+                        status: client_1.UserStatus.ACTIVE,
+                    },
+                });
+                const vendor = yield transactionClient.vendor.create({
+                    data: {
+                        name: user.name,
+                        email: user.email,
+                    },
+                });
+                yield transactionClient.vendorDashboard.create({
+                    data: {
+                        vendorId: vendor === null || vendor === void 0 ? void 0 : vendor.id,
+                    },
+                });
+                return vendor;
+            }));
+            console.log("Vendor created successfully...");
             console.log("Seeding completed...");
         }
     }

@@ -28,19 +28,27 @@ const client_1 = require("@prisma/client");
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
 const createOrder = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
-        const orderData = {
-            customerId: payload.customerId,
-            shopId: payload.shopId,
-            quantity: payload.quantity,
-            totalAmount: payload.totalAmount,
-            discount: payload.discount,
-            orderNumber: payload.orderNumber,
-        };
+    const productId = payload.orderItems[0].productId;
+    const product = yield prisma_1.default.product.findUniqueOrThrow({
+        where: {
+            id: productId
+        }
+    });
+    const shopId = product.shopId;
+    const shop = yield prisma_1.default.shop.findUniqueOrThrow({
+        where: {
+            id: shopId
+        }
+    });
+    const vendorId = shop.vendorId;
+    payload.vendorId = vendorId;
+    payload.shopId = shopId;
+    const order = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const { orderItems } = payload, orderData = __rest(payload, ["orderItems"]);
         const order = yield transactionClient.order.create({
             data: orderData,
         });
-        payload.orderItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
+        orderItems.forEach((item) => __awaiter(void 0, void 0, void 0, function* () {
             yield transactionClient.orderItem.create({
                 data: {
                     orderId: order.id,
@@ -49,11 +57,38 @@ const createOrder = (payload) => __awaiter(void 0, void 0, void 0, function* () 
                 },
             });
         }));
+        const cart = yield transactionClient.cart.findFirstOrThrow({
+            where: {
+                customerId: order.customerId
+            }
+        });
+        yield transactionClient.cartItem.deleteMany({
+            where: {
+                cartId: cart.id
+            }
+        });
+        yield transactionClient.product.updateMany({
+            where: {
+                id: {
+                    in: orderItems.map((item) => item.productId),
+                },
+            },
+            data: {
+                quantity: {
+                    decrement: orderItems.reduce((total, item) => total + item.quantity, 0),
+                },
+            },
+        });
     }));
+    console.log(order);
+    return order;
 });
 const getAllOrdersFromDB = (params, options, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip } = paginationHelper_1.paginationHelper.calculatePagination(options);
-    const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
+    const { searchTerm, isReview } = params, filterData = __rest(params, ["searchTerm", "isReview"]);
+    if (isReview) {
+        isReview === "true" ? filterData.isReview = true : filterData.isReview = false;
+    }
     const andConditions = [];
     if (searchTerm) {
         andConditions.push({
@@ -88,13 +123,13 @@ const getAllOrdersFromDB = (params, options, userEmail) => __awaiter(void 0, voi
     }
     else if (user.role === client_1.Role.VENDOR) {
         yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
-            const vendor = yield transactionClient.vendor.findUniqueOrThrow({
+            const vendor = yield transactionClient.vendor.findFirstOrThrow({
                 where: { email: user.email },
             });
-            const shop = yield transactionClient.shop.findUniqueOrThrow({
-                where: { vendorId: vendor.id },
-            });
-            whereConditions.shopId = shop.id;
+            // const shop = await transactionClient.shop.findFirstOrThrow({
+            //   where: { vendorId: vendor.id },
+            // });
+            whereConditions.vendorId = vendor.id;
         }));
     }
     const result = yield prisma_1.default.order.findMany({
@@ -110,7 +145,16 @@ const getAllOrdersFromDB = (params, options, userEmail) => __awaiter(void 0, voi
             },
         include: {
             customer: true,
-            orderItems: true,
+            orderItems: {
+                include: {
+                    product: {
+                        include: {
+                            shop: true,
+                            reviews: true
+                        },
+                    },
+                },
+            },
         },
     });
     const total = yield prisma_1.default.order.count({
@@ -130,7 +174,11 @@ const getSingleOrderFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
         where: { id },
         include: {
             customer: true,
-            orderItems: true,
+            orderItems: {
+                include: {
+                    product: true,
+                },
+            },
         },
     });
     return order;

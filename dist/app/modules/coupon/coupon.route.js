@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CouponRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const auth_1 = __importDefault(require("../../middlewares/auth"));
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const client_1 = require("@prisma/client");
 const coupon_controller_1 = require("./coupon.controller");
 const coupon_validation_1 = require("./coupon.validation");

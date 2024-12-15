@@ -59,7 +59,7 @@ const deleteCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     });
 }));
 const updateCategory = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield category_service_1.CategoryServices.updateCategory(req.params.id, req.body);
+    const result = yield category_service_1.CategoryServices.updateCategory(req.params.id, req.body, req.file);
     (0, sendResponse_1.default)(res, {
         success: true,
         statusCode: http_status_1.default.OK,

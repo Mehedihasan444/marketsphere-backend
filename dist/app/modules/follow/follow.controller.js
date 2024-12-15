@@ -16,12 +16,13 @@ exports.FollowControllers = void 0;
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const follow_service_1 = require("./follow.service");
+const http_status_1 = __importDefault(require("http-status"));
 const followShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const data = req.body;
     const customers = yield follow_service_1.FollowServices.followShop(data);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Follow this shop Successfully",
         data: customers,
     });
@@ -31,12 +32,22 @@ const unfollowShop = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     const customers = yield follow_service_1.FollowServices.unfollowShop(data);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Unfollow this shop Successfully",
+        data: customers,
+    });
+}));
+const getFollowedShops = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const customers = yield follow_service_1.FollowServices.getFollowedShops(req.user.email);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Followed shops retrieved  Successfully",
         data: customers,
     });
 }));
 exports.FollowControllers = {
     followShop,
     unfollowShop,
+    getFollowedShops
 };

@@ -44,6 +44,6 @@ router.get("/:id", auth(Role.CUSTOMER), ReviewControllers.getSingleReview);
 // Route to delete a Review (only accessible by Admins)
 router.delete(
   "/:id",
-  auth(Role.ADMIN, Role.CUSTOMER),
+  auth(Role.ADMIN, Role.SUPER_ADMIN,Role.VENDOR),
   ReviewControllers.deleteReview
 );

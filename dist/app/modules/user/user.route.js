@@ -8,7 +8,7 @@ const express_1 = __importDefault(require("express"));
 const user_controller_1 = require("./user.controller");
 const auth_1 = __importDefault(require("../../middlewares/auth"));
 const user_validation_1 = require("./user.validation");
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const client_1 = require("@prisma/client");
 const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const router = express_1.default.Router();
@@ -22,9 +22,9 @@ router.post("/create-customer", (0, validateRequest_1.default)(user_validation_1
 // get all users
 router.get("/", (0, auth_1.default)(client_1.Role.ADMIN), user_controller_1.UserControllers.getAllUsers);
 // get my profile
-router.get("/me", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), user_controller_1.UserControllers.getMyProfile);
+router.get("/me", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN, client_1.Role.VENDOR, client_1.Role.CUSTOMER), user_controller_1.UserControllers.getMyProfile);
 // update my profile
-router.patch("/update-my-profile", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN), sendImageToCloudinary_1.upload.single("profilePhoto"), (req, res, next) => {
+router.patch("/update-my-profile", (0, auth_1.default)(client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN, client_1.Role.VENDOR, client_1.Role.CUSTOMER), sendImageToCloudinary_1.upload.single("profilePhoto"), (req, res, next) => {
     req.body = JSON.parse(req.body.data);
     next();
 }, user_controller_1.UserControllers.updateMyProfile);

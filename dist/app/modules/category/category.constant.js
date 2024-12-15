@@ -7,4 +7,5 @@ exports.CategorySearchableFields = [
 ];
 exports.CategoryFilterableFields = [
     "searchTerm",
+    "noOfProducts",
 ]; // for all filtering

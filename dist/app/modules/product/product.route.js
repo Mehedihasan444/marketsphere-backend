@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const auth_1 = __importDefault(require("../../middlewares/auth"));
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const client_1 = require("@prisma/client");
 const product_controller_1 = require("./product.controller");
 const product_validation_1 = require("./product.validation");

@@ -14,6 +14,11 @@ const review_route_1 = require("../modules/review/review.route");
 const follow_route_1 = require("../modules/follow/follow.route");
 const flashSale_route_1 = require("../modules/flashSale/flashSale.route");
 const coupon_route_1 = require("../modules/coupon/coupon.route");
+const shop_route_1 = require("../modules/shop/shop.route");
+const becomeVendorRequest_route_1 = require("../modules/becomeVendorRequest/becomeVendorRequest.route");
+const dashboard_route_1 = require("../modules/DashBoard/dashboard.route");
+const payment_route_1 = require("../modules/payment/payment.route");
+const transaction_route_1 = require("../modules/transaction/transaction.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -67,6 +72,26 @@ const moduleRoutes = [
     {
         path: "/coupons",
         route: coupon_route_1.CouponRoutes,
+    },
+    {
+        path: "/shops",
+        route: shop_route_1.ShopRoutes,
+    },
+    {
+        path: "/dashboard",
+        route: dashboard_route_1.DashboardRoutes,
+    },
+    {
+        path: "/payment",
+        route: payment_route_1.PaymentRoutes,
+    },
+    {
+        path: "/become-a-vendor",
+        route: becomeVendorRequest_route_1.BecomeVendorRequestRoutes,
+    },
+    {
+        path: "/transactions",
+        route: transaction_route_1.TransactionRoutes,
     },
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

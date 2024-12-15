@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FlashSaleRoutes = void 0;
 const express_1 = __importDefault(require("express"));
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest "));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
 const flashSale_controller_1 = require("./flashSale.controller");
 const flashSale_validation_1 = require("./flashSale.validation");
 const auth_1 = __importDefault(require("../../middlewares/auth"));

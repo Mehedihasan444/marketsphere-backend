@@ -28,20 +28,114 @@ const client_1 = require("@prisma/client");
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
 const createReview = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma_1.default.review.create({
-        data: payload,
-    });
-    return result;
+    const review = yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
+        const { orderId } = payload, reviewData = __rest(payload, ["orderId"]);
+        const review = yield transactionClient.reviewItem.create({
+            data: reviewData
+        });
+        const result = yield transactionClient.order.update({
+            where: {
+                id: payload.orderId
+            },
+            data: {
+                isReview: true
+            },
+        });
+        return review;
+    }));
+    return review;
 });
+// const getAllReviewsFromDB = async (
+//   params: any,
+//   options: any,
+//   userEmail: string
+// ) => {
+//   const { page, limit, skip } = paginationHelper.calculatePagination(options);
+//   const { searchTerm, ...filterData } = params;
+//   const andConditions: Prisma.ReviewItemWhereInput[] = [];
+//   if (searchTerm) {
+//     andConditions.push({
+//       OR: [{ comment: { contains: searchTerm, mode: "insensitive" } }],
+//     });
+//   }
+//   if (Object.keys(filterData).length > 0) {
+//     andConditions.push({
+//       AND: Object.keys(filterData).map((key) => ({
+//         [key]: {
+//           equals: (filterData as any)[key],
+//         },
+//       })),
+//     });
+//   }
+//   let whereConditions: Prisma.ReviewItemWhereInput =
+//     andConditions.length > 0 ? { AND: andConditions } : {};
+//   const user = await prisma.user.findUniqueOrThrow({
+//     where: { email: userEmail },
+//   });
+//   if (user.role === Role.CUSTOMER) {
+//     const customer = await prisma.customer.findUniqueOrThrow({
+//       where: { email: user.email },
+//     });
+//     whereConditions.customerId = customer.id;
+//   } else if (user.role === Role.VENDOR) {
+//     await prisma.$transaction(async (transactionClient) => {
+//       const vendor = await transactionClient.vendor.findFirstOrThrow({
+//         where: { email: user.email },
+//       });
+//       const shop = await transactionClient.shop.findMany({
+//         where: { vendorId: vendor.id }, include: { vendor: true ,reviews:true},
+//       });
+//       // const review = await transactionClient.review.findFirstOrThrow({
+//       //   where: { shopId: shop.id },
+//       // });
+//       // whereConditions.shopId = shop.map((shop) => shop.id);
+//       const shopIds = shop.map((shop) => shop.id);
+//       if (shopIds.length > 0) {
+//         whereConditions = { ...whereConditions, shopId: { in: shopIds } };
+//       } else {
+//         // Handle case where vendor has no associated shops
+//         whereConditions = { ...whereConditions, shopId: null };
+//       }
+//     });
+//   }
+//   const result = await prisma.reviewItem.findMany({
+//     where: whereConditions,
+//     skip,
+//     take: limit,
+//     orderBy:
+//       options.sortBy && options.sortOrder
+//         ? {
+//           [options.sortBy]: options.sortOrder,
+//         }
+//         : {
+//           createdAt: "desc",
+//         },include:{
+//           customer:true,
+//         }
+//   });
+//   const total = await prisma.reviewItem.count({
+//     where: whereConditions,
+//   });
+//   return {
+//     meta: {
+//       page,
+//       limit,
+//       total,
+//     },
+//     data: result,
+//   };
+// };
 const getAllReviewsFromDB = (params, options, userEmail) => __awaiter(void 0, void 0, void 0, function* () {
     const { page, limit, skip } = paginationHelper_1.paginationHelper.calculatePagination(options);
     const { searchTerm } = params, filterData = __rest(params, ["searchTerm"]);
     const andConditions = [];
+    // Add searchTerm condition
     if (searchTerm) {
         andConditions.push({
             OR: [{ comment: { contains: searchTerm, mode: "insensitive" } }],
         });
     }
+    // Add filter conditions dynamically
     if (Object.keys(filterData).length > 0) {
         andConditions.push({
             AND: Object.keys(filterData).map((key) => ({
@@ -51,28 +145,39 @@ const getAllReviewsFromDB = (params, options, userEmail) => __awaiter(void 0, vo
             })),
         });
     }
-    const whereConditions = andConditions.length > 0 ? { AND: andConditions } : {};
+    // Initialize whereConditions
+    let whereConditions = andConditions.length > 0 ? { AND: andConditions } : {};
+    // Find the user by email
     const user = yield prisma_1.default.user.findUniqueOrThrow({
         where: { email: userEmail },
     });
     if (user.role === client_1.Role.CUSTOMER) {
+        // If user is a CUSTOMER, filter reviews by customerId
         const customer = yield prisma_1.default.customer.findUniqueOrThrow({
             where: { email: user.email },
         });
-        whereConditions.customerId = customer.id;
+        whereConditions = Object.assign(Object.assign({}, whereConditions), { customerId: customer.id });
     }
     else if (user.role === client_1.Role.VENDOR) {
-        yield prisma_1.default.$transaction((transactionClient) => __awaiter(void 0, void 0, void 0, function* () {
-            const vendor = yield transactionClient.vendor.findUniqueOrThrow({
-                where: { email: user.email },
-            });
-            const shop = yield transactionClient.shop.findUniqueOrThrow({
-                where: { vendorId: vendor.id },
-            });
-            whereConditions.shopId = shop.id;
-        }));
+        // If user is a VENDOR, filter reviews by shopId(s) associated with the vendor
+        const vendor = yield prisma_1.default.vendor.findFirstOrThrow({
+            where: { email: user.email },
+        });
+        const shops = yield prisma_1.default.shop.findMany({
+            where: { vendorId: vendor.id },
+            select: { id: true },
+        });
+        const shopIds = shops.map((shop) => shop.id);
+        if (shopIds.length > 0) {
+            whereConditions = Object.assign(Object.assign({}, whereConditions), { shopId: { in: shopIds } });
+        }
+        else {
+            // Handle case where vendor has no associated shops
+            whereConditions = Object.assign(Object.assign({}, whereConditions), { shopId: undefined });
+        }
     }
-    const result = yield prisma_1.default.review.findMany({
+    // Fetch paginated reviews
+    const result = yield prisma_1.default.reviewItem.findMany({
         where: whereConditions,
         skip,
         take: limit,
@@ -83,8 +188,12 @@ const getAllReviewsFromDB = (params, options, userEmail) => __awaiter(void 0, vo
             : {
                 createdAt: "desc",
             },
+        include: {
+            customer: true,
+        },
     });
-    const total = yield prisma_1.default.review.count({
+    // Get total count for pagination
+    const total = yield prisma_1.default.reviewItem.count({
         where: whereConditions,
     });
     return {
@@ -96,6 +205,19 @@ const getAllReviewsFromDB = (params, options, userEmail) => __awaiter(void 0, vo
         data: result,
     };
 });
+const getProductReviews = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const Review = yield prisma_1.default.product.findFirstOrThrow({
+        where: { id },
+        include: {
+            reviews: {
+                include: {
+                    reviewItems: true
+                }
+            },
+        },
+    });
+    return Review.reviews;
+});
 const getSingleReviewFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const Review = yield prisma_1.default.review.findUniqueOrThrow({
         where: { id },
@@ -103,10 +225,10 @@ const getSingleReviewFromDB = (id) => __awaiter(void 0, void 0, void 0, function
     return Review;
 });
 const deleteReviewFromDB = (ReviewId) => __awaiter(void 0, void 0, void 0, function* () {
-    yield prisma_1.default.review.findUniqueOrThrow({
+    yield prisma_1.default.reviewItem.findFirstOrThrow({
         where: { id: ReviewId },
     });
-    const result = yield prisma_1.default.review.delete({
+    const result = yield prisma_1.default.reviewItem.delete({
         where: { id: ReviewId },
     });
     return result;
@@ -127,4 +249,5 @@ exports.ReviewServices = {
     getSingleReviewFromDB,
     deleteReviewFromDB,
     updateReview,
+    getProductReviews,
 };

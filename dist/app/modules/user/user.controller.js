@@ -49,7 +49,6 @@ const createCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 const getAllUsers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const filters = (0, pick_1.default)(req.query, user_constant_1.userFilterableFields);
     const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-    console.log(options);
     const users = yield user_service_1.UserServices.getAllUsersFromDB(filters, options);
     (0, sendResponse_1.default)(res, {
         success: true,

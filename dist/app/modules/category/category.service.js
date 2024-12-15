@@ -28,8 +28,8 @@ const prisma_1 = __importDefault(require("../../config/prisma"));
 const paginationHelper_1 = require("../../utils/paginationHelper");
 const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const createCategory = (file, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    if (file.image) {
-        const image = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.image.originalname, file.image.path);
+    if (file) {
+        const image = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(file.originalname, file.path);
         payload.image = image.secure_url;
     }
     const result = yield prisma_1.default.category.create({
@@ -98,12 +98,16 @@ const deleteCategoryFromDB = (categoryId) => __awaiter(void 0, void 0, void 0, f
     });
     return result;
 });
-const updateCategory = (categoryId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const category = yield prisma_1.default.category.findUniqueOrThrow({
+const updateCategory = (categoryId, payload, image) => __awaiter(void 0, void 0, void 0, function* () {
+    const category = yield prisma_1.default.category.findFirstOrThrow({
         where: { id: categoryId },
     });
+    if (image) {
+        const img = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(image.originalname, image.path);
+        payload.image = img.secure_url;
+    }
     const result = yield prisma_1.default.category.update({
-        where: { id: categoryId },
+        where: { id: category.id },
         data: payload,
     });
     return result;

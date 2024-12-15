@@ -14,21 +14,67 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FollowServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
 const followShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma_1.default.follow.create({
-        data: payload,
-    });
-    return result;
-});
-const unfollowShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield prisma_1.default.follow.delete({
+    const isExist = yield prisma_1.default.follow.findUnique({
         where: {
-            id: `${payload.customerId}_${payload.shopId}`,
+            customerId_shopId: {
+                customerId: payload.customerId,
+                shopId: payload.shopId,
+            },
+        },
+    });
+    if (isExist) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "You have already followed this shop.");
+    }
+    const result = yield prisma_1.default.follow.create({
+        data: {
+            customerId: payload.customerId,
+            shopId: payload.shopId,
         },
     });
     return result;
 });
+const unfollowShop = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const isExist = yield prisma_1.default.follow.findUnique({
+        where: {
+            customerId_shopId: {
+                customerId: payload.customerId,
+                shopId: payload.shopId,
+            },
+        },
+    });
+    if (!isExist) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "You are not following this shop.");
+    }
+    const result = yield prisma_1.default.follow.delete({
+        where: {
+            customerId_shopId: {
+                customerId: payload.customerId,
+                shopId: payload.shopId,
+            },
+        },
+    });
+    return result;
+});
+const getFollowedShops = (userEmail) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.customer.findFirst({
+        where: {
+            email: userEmail,
+        },
+        include: {
+            follow: {
+                include: {
+                    shop: true,
+                },
+            },
+        },
+    });
+    return result === null || result === void 0 ? void 0 : result.follow;
+});
 exports.FollowServices = {
     followShop,
     unfollowShop,
+    getFollowedShops,
 };

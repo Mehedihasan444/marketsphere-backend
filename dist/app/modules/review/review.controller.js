@@ -18,11 +18,12 @@ const pick_1 = __importDefault(require("../../utils/pick"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const review_constant_1 = require("./review.constant");
 const review_service_1 = require("./review.service");
+const http_status_1 = __importDefault(require("http-status"));
 const createReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const Review = yield review_service_1.ReviewServices.createReview(req.body);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Review Created Successfully",
         data: Review,
     });
@@ -34,16 +35,25 @@ const getAllReviews = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     const Reviews = yield review_service_1.ReviewServices.getAllReviewsFromDB(filters, options, userEmail);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Reviews Retrieved Successfully",
         data: Reviews,
+    });
+}));
+const getProductReviews = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const Review = yield review_service_1.ReviewServices.getProductReviews(req.params.id);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_1.default.OK,
+        message: "Reviews Retrieved Successfully",
+        data: Review,
     });
 }));
 const getSingleReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const Review = yield review_service_1.ReviewServices.getSingleReviewFromDB(req.params.id);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Review Retrieved Successfully",
         data: Review,
     });
@@ -53,7 +63,7 @@ const deleteReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     yield review_service_1.ReviewServices.deleteReviewFromDB(id);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Review Deleted Successfully",
         data: null,
     });
@@ -62,7 +72,7 @@ const updateReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     const result = yield review_service_1.ReviewServices.updateReview(req.params.id, req.body);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Review Updated Successfully",
         data: result,
     });
@@ -73,4 +83,5 @@ exports.ReviewControllers = {
     getSingleReview,
     deleteReview,
     updateReview,
+    getProductReviews,
 };

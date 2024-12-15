@@ -43,6 +43,11 @@ const createAdmin = (payload) => __awaiter(void 0, void 0, void 0, function* () 
                 email: user.email,
             },
         });
+        yield transactionClient.adminDashboard.create({
+            data: {
+                adminId: admin === null || admin === void 0 ? void 0 : admin.id,
+            },
+        });
         return admin;
     }));
     return result;
@@ -60,6 +65,21 @@ const createCustomer = (payload) => __awaiter(void 0, void 0, void 0, function* 
                 email: user.email,
             },
         });
+        yield transactionClient.customerDashboard.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
+        yield transactionClient.cart.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
+        yield transactionClient.wishlist.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
         return customer;
     }));
     return result;
@@ -75,9 +95,11 @@ const createVendor = (payload) => __awaiter(void 0, void 0, void 0, function* ()
             data: {
                 name: payload.name,
                 email: user.email,
-                shopName: payload.shopName,
-                shopLogo: payload.shopLogo,
-                description: payload.description,
+            },
+        });
+        yield transactionClient.vendorDashboard.create({
+            data: {
+                vendorId: vendor === null || vendor === void 0 ? void 0 : vendor.id,
             },
         });
         return vendor;
@@ -123,6 +145,7 @@ const getAllUsersFromDB = (params, options) => __awaiter(void 0, void 0, void 0,
         select: {
             id: true,
             email: true,
+            name: true,
             role: true,
             needPasswordChange: true,
             status: true,
@@ -153,19 +176,66 @@ const deleteUserFromDB = (userId) => __awaiter(void 0, void 0, void 0, function*
     return result;
 });
 // change the status of a user
-const changeProfileStatus = (id, status) => __awaiter(void 0, void 0, void 0, function* () {
-    const userData = yield prisma_1.default.user.findUniqueOrThrow({
+const changeProfileStatus = (id, payload) => __awaiter(void 0, void 0, void 0, function* () {
+    // Check if user exists
+    const isExist = yield prisma_1.default.user.findUniqueOrThrow({
         where: {
             id,
         },
     });
-    const updateUserStatus = yield prisma_1.default.user.update({
-        where: {
-            id,
-        },
-        data: status,
-    });
-    return updateUserStatus;
+    // If a role change is requested
+    if (payload.role) {
+        // Update the role in the user table
+        yield prisma_1.default.user.update({
+            where: {
+                id,
+            },
+            data: {
+                role: payload.role,
+            },
+        });
+        // Delete the user record from the current role-specific table
+        const roleModels = {
+            [client_1.Role.ADMIN]: "admin",
+            [client_1.Role.CUSTOMER]: "customer",
+            [client_1.Role.VENDOR]: "vendor",
+        };
+        const currentRole = isExist.role;
+        if (currentRole &&
+            currentRole !== client_1.Role.SUPER_ADMIN &&
+            roleModels[currentRole]) {
+            const modelName = roleModels[currentRole];
+            yield prisma_1.default[modelName].delete({
+                where: {
+                    email: isExist.email,
+                },
+            });
+        }
+        // Add the user to the new role-specific table
+        const newRoleModel = roleModels[payload.role];
+        if (newRoleModel) {
+            yield prisma_1.default[newRoleModel].create({
+                data: {
+                    name: isExist.name,
+                    email: isExist.email,
+                },
+            });
+        }
+    }
+    // If only status change is requested
+    if (payload.status) {
+        return yield prisma_1.default.user.update({
+            where: {
+                id,
+            },
+            data: {
+                status: payload.status,
+            },
+        });
+    }
+    return {
+        message: "User updated successfully",
+    };
 });
 // get a single user from the database
 const getMyProfile = (user) => __awaiter(void 0, void 0, void 0, function* () {
@@ -210,6 +280,12 @@ const getMyProfile = (user) => __awaiter(void 0, void 0, void 0, function* () {
             },
             include: {
                 user: true,
+                order: true,
+                cart: true,
+                follow: true,
+                customerDashboard: true,
+                Wishlist: true,
+                reviewItems: true,
             },
         });
     }
@@ -232,7 +308,7 @@ const updateMyProfile = (user, req) => __awaiter(void 0, void 0, void 0, functio
             status: client_1.UserStatus.ACTIVE,
         },
     });
-    const { profilePhoto } = req.file;
+    const profilePhoto = req.file;
     if (profilePhoto) {
         const uploadToCloudinary = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(profilePhoto.originalname, profilePhoto.path);
         req.body.profilePhoto = uploadToCloudinary === null || uploadToCloudinary === void 0 ? void 0 : uploadToCloudinary.secure_url;

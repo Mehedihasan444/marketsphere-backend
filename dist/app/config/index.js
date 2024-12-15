@@ -21,6 +21,8 @@ exports.default = {
     admin_password: process.env.ADMIN_PASSWORD,
     admin_profile_photo: process.env.ADMIN_PROFILE_PHOTO,
     admin_mobile_number: process.env.ADMIN_MOBILE_NUMBER,
+    vendor_email: process.env.VENDOR_EMAIL,
+    vendor_password: process.env.VENDOR_PASSWORD,
     cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
     cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,

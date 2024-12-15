@@ -29,8 +29,8 @@ const paginationHelper_1 = require("../../utils/paginationHelper");
 const sendImageToCloudinary_1 = require("../../utils/sendImageToCloudinary");
 const createProduct = (files, payload) => __awaiter(void 0, void 0, void 0, function* () {
     if (files) {
-        const { images } = files;
-        const imageUrls = yield Promise.all(images.map((image) => __awaiter(void 0, void 0, void 0, function* () {
+        const images = files;
+        const imageUrls = yield Promise.all(images === null || images === void 0 ? void 0 : images.map((image) => __awaiter(void 0, void 0, void 0, function* () {
             const imageName = image === null || image === void 0 ? void 0 : image.originalname;
             const path = image === null || image === void 0 ? void 0 : image.path;
             const { secure_url } = yield (0, sendImageToCloudinary_1.sendImageToCloudinary)(imageName, path);
@@ -38,9 +38,18 @@ const createProduct = (files, payload) => __awaiter(void 0, void 0, void 0, func
         })));
         payload.images = imageUrls;
     }
-    const result = yield prisma_1.default.product.create({
-        data: payload,
-    });
+    const result = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const product = yield tx.product.create({
+            data: Object.assign({}, payload),
+        });
+        yield tx.review.create({
+            data: {
+                shopId: product.shopId,
+                productId: product.id,
+            },
+        });
+        return product;
+    }));
     return result;
 });
 const getAllProductsFromDB = (params, options) => __awaiter(void 0, void 0, void 0, function* () {
@@ -52,8 +61,20 @@ const getAllProductsFromDB = (params, options) => __awaiter(void 0, void 0, void
             OR: [
                 { name: { contains: searchTerm, mode: "insensitive" } },
                 { description: { contains: searchTerm, mode: "insensitive" } },
+                { category: { name: { contains: searchTerm, mode: "insensitive" } } }
             ],
         });
+    }
+    if (filterData.category) {
+        andConditions.push({
+            category: {
+                name: {
+                    equals: filterData.category,
+                    mode: "insensitive",
+                },
+            },
+        });
+        delete filterData.category;
     }
     if (Object.keys(filterData).length > 0) {
         andConditions.push({
@@ -79,6 +100,9 @@ const getAllProductsFromDB = (params, options) => __awaiter(void 0, void 0, void
         include: {
             category: true,
             shop: true,
+            cartItems: true,
+            orderItems: true,
+            reviews: true,
         },
     });
     const total = yield prisma_1.default.product.count({
@@ -96,6 +120,13 @@ const getAllProductsFromDB = (params, options) => __awaiter(void 0, void 0, void
 const getSingleProductFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const product = yield prisma_1.default.product.findUniqueOrThrow({
         where: { id },
+        include: {
+            category: true,
+            shop: true,
+            cartItems: true,
+            orderItems: true,
+            reviews: true,
+        },
     });
     return product;
 });

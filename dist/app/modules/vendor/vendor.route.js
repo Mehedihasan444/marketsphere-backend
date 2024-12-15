@@ -12,7 +12,7 @@ const router = (0, express_1.Router)();
 // Get all vendors
 router.get("/", (0, auth_1.default)(client_1.Role.ADMIN), vendor_controller_1.VendorControllers.getAllVendors);
 // Get a vendor by ID
-router.get("/:id", (0, auth_1.default)(client_1.Role.ADMIN), vendor_controller_1.VendorControllers.getSingleVendor);
+router.get("/:email", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), vendor_controller_1.VendorControllers.getSingleVendor);
 // Update a vendor by ID
 router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN), vendor_controller_1.VendorControllers.updateVendor);
 // Delete a vendor by ID

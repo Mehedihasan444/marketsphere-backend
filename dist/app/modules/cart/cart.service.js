@@ -14,36 +14,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CartServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
 const addToCart = (payload) => __awaiter(void 0, void 0, void 0, function* () {
-    const { customerId } = payload;
-    const isExist = yield prisma_1.default.cart.findFirst({
+    const customer = yield prisma_1.default.customer.findFirstOrThrow({
+        where: {
+            email: payload.email,
+        },
+    });
+    const customerId = customer.id;
+    const getCart = yield prisma_1.default.cart.findFirstOrThrow({
         where: {
             customerId,
+        },
+    });
+    const info = {
+        productId: payload.productId,
+        cartId: getCart.id,
+        quantity: (payload === null || payload === void 0 ? void 0 : payload.quantity) || 1,
+    };
+    const isExist = yield prisma_1.default.cartItem.findFirst({
+        where: {
+            productId: payload.productId,
+            cartId: getCart.id,
         },
     });
     if (isExist) {
-        payload.cartId = isExist === null || isExist === void 0 ? void 0 : isExist.id;
-    }
-    if (!isExist) {
-        const cartItem = yield prisma_1.default.cart.create({
-            data: {
-                customerId,
-            },
-        });
-        payload.cartId = cartItem.id;
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Product already in cart");
     }
     const cart = yield prisma_1.default.cartItem.create({
-        data: payload,
+        data: info,
     });
     return cart;
 });
-const getCartItems = (customerId) => __awaiter(void 0, void 0, void 0, function* () {
-    const carts = yield prisma_1.default.cart.findFirst({
+const getCartItems = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const customer = yield prisma_1.default.customer.findFirstOrThrow({
         where: {
-            customerId,
+            email,
         },
     });
-    return carts;
+    const carts = yield prisma_1.default.cart.findFirst({
+        where: {
+            customerId: customer.id,
+        },
+        include: {
+            cartItems: { include: { product: true } },
+        },
+    });
+    return carts === null || carts === void 0 ? void 0 : carts.cartItems;
 });
 const updateCartItem = (cartItemId, payload) => __awaiter(void 0, void 0, void 0, function* () {
     yield prisma_1.default.cartItem.findUniqueOrThrow({ where: { id: cartItemId } });
@@ -63,6 +81,7 @@ const removeCartItem = (cartItemId) => __awaiter(void 0, void 0, void 0, functio
     return result;
 });
 const clearCart = (cartId) => __awaiter(void 0, void 0, void 0, function* () {
+    yield prisma_1.default.cartItem.findFirstOrThrow({ where: { cartId } });
     yield prisma_1.default.cartItem.deleteMany({
         where: {
             cartId,

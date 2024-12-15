@@ -22,6 +22,97 @@ const createReview = async (payload: ReviewItem & { orderId: string }) => {
   return review;
 };
 
+// const getAllReviewsFromDB = async (
+//   params: any,
+//   options: any,
+//   userEmail: string
+// ) => {
+//   const { page, limit, skip } = paginationHelper.calculatePagination(options);
+
+//   const { searchTerm, ...filterData } = params;
+//   const andConditions: Prisma.ReviewItemWhereInput[] = [];
+
+//   if (searchTerm) {
+//     andConditions.push({
+//       OR: [{ comment: { contains: searchTerm, mode: "insensitive" } }],
+//     });
+//   }
+
+//   if (Object.keys(filterData).length > 0) {
+//     andConditions.push({
+//       AND: Object.keys(filterData).map((key) => ({
+//         [key]: {
+//           equals: (filterData as any)[key],
+//         },
+//       })),
+//     });
+//   }
+
+//   let whereConditions: Prisma.ReviewItemWhereInput =
+//     andConditions.length > 0 ? { AND: andConditions } : {};
+
+//   const user = await prisma.user.findUniqueOrThrow({
+//     where: { email: userEmail },
+//   });
+
+//   if (user.role === Role.CUSTOMER) {
+//     const customer = await prisma.customer.findUniqueOrThrow({
+//       where: { email: user.email },
+//     });
+//     whereConditions.customerId = customer.id;
+//   } else if (user.role === Role.VENDOR) {
+//     await prisma.$transaction(async (transactionClient) => {
+//       const vendor = await transactionClient.vendor.findFirstOrThrow({
+//         where: { email: user.email },
+//       });
+//       const shop = await transactionClient.shop.findMany({
+//         where: { vendorId: vendor.id }, include: { vendor: true ,reviews:true},
+//       });
+//       // const review = await transactionClient.review.findFirstOrThrow({
+//       //   where: { shopId: shop.id },
+//       // });
+
+//       // whereConditions.shopId = shop.map((shop) => shop.id);
+//       const shopIds = shop.map((shop) => shop.id);
+
+//       if (shopIds.length > 0) {
+//         whereConditions = { ...whereConditions, shopId: { in: shopIds } };
+//       } else {
+//         // Handle case where vendor has no associated shops
+//         whereConditions = { ...whereConditions, shopId: null };
+//       }
+//     });
+//   }
+
+//   const result = await prisma.reviewItem.findMany({
+//     where: whereConditions,
+//     skip,
+//     take: limit,
+//     orderBy:
+//       options.sortBy && options.sortOrder
+//         ? {
+//           [options.sortBy]: options.sortOrder,
+//         }
+//         : {
+//           createdAt: "desc",
+//         },include:{
+//           customer:true,
+//         }
+//   });
+
+//   const total = await prisma.reviewItem.count({
+//     where: whereConditions,
+//   });
+
+//   return {
+//     meta: {
+//       page,
+//       limit,
+//       total,
+//     },
+//     data: result,
+//   };
+// };
 const getAllReviewsFromDB = async (
   params: any,
   options: any,
@@ -32,12 +123,14 @@ const getAllReviewsFromDB = async (
   const { searchTerm, ...filterData } = params;
   const andConditions: Prisma.ReviewItemWhereInput[] = [];
 
+  // Add searchTerm condition
   if (searchTerm) {
     andConditions.push({
       OR: [{ comment: { contains: searchTerm, mode: "insensitive" } }],
     });
   }
 
+  // Add filter conditions dynamically
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
       AND: Object.keys(filterData).map((key) => ({
@@ -48,34 +141,43 @@ const getAllReviewsFromDB = async (
     });
   }
 
-  const whereConditions: Prisma.ReviewItemWhereInput =
+  // Initialize whereConditions
+  let whereConditions: Prisma.ReviewItemWhereInput& Prisma.ReviewWhereInput=
     andConditions.length > 0 ? { AND: andConditions } : {};
 
+  // Find the user by email
   const user = await prisma.user.findUniqueOrThrow({
     where: { email: userEmail },
   });
 
   if (user.role === Role.CUSTOMER) {
+    // If user is a CUSTOMER, filter reviews by customerId
     const customer = await prisma.customer.findUniqueOrThrow({
       where: { email: user.email },
     });
-    whereConditions.customerId = customer.id;
+    whereConditions = { ...whereConditions, customerId: customer.id };
   } else if (user.role === Role.VENDOR) {
-    await prisma.$transaction(async (transactionClient) => {
-      const vendor = await transactionClient.vendor.findFirstOrThrow({
-        where: { email: user.email },
-      });
-      const shop = await transactionClient.shop.findFirstOrThrow({
-        where: { vendorId: vendor.id }, include: { vendor: true },
-      });
-      const review = await transactionClient.review.findFirstOrThrow({
-        where: { shopId: shop.id },
-      });
-
-      whereConditions.reviewId = review.id;
+    // If user is a VENDOR, filter reviews by shopId(s) associated with the vendor
+    const vendor = await prisma.vendor.findFirstOrThrow({
+      where: { email: user.email },
     });
+
+    const shops = await prisma.shop.findMany({
+      where: { vendorId: vendor.id },
+      select: { id: true },
+    });
+
+    const shopIds = shops.map((shop) => shop.id);
+
+    if (shopIds.length > 0) {
+      whereConditions = { ...whereConditions, shopId: { in: shopIds } };
+    } else {
+      // Handle case where vendor has no associated shops
+      whereConditions = { ...whereConditions, shopId: undefined };
+    }
   }
 
+  // Fetch paginated reviews
   const result = await prisma.reviewItem.findMany({
     where: whereConditions,
     skip,
@@ -83,15 +185,17 @@ const getAllReviewsFromDB = async (
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-          [options.sortBy]: options.sortOrder,
-        }
+            [options.sortBy]: options.sortOrder,
+          }
         : {
-          createdAt: "desc",
-        },include:{
-          customer:true,
-        }
+            createdAt: "desc",
+          },
+    include: {
+      customer: true,
+    },
   });
 
+  // Get total count for pagination
   const total = await prisma.reviewItem.count({
     where: whereConditions,
   });
@@ -131,13 +235,14 @@ const getSingleReviewFromDB = async (id: string) => {
 };
 
 const deleteReviewFromDB = async (ReviewId: string) => {
-  await prisma.review.findUniqueOrThrow({
+  await prisma.reviewItem.findFirstOrThrow({
     where: { id: ReviewId },
   });
 
-  const result = await prisma.review.delete({
+  const result = await prisma.reviewItem.delete({
     where: { id: ReviewId },
   });
+  
   return result;
 };
 

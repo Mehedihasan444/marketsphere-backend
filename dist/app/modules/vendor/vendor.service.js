@@ -66,7 +66,7 @@ const getAllVendorsFromDB = (params, options) => __awaiter(void 0, void 0, void 
             },
         select: {
             user: true,
-            // shop: true,
+            shop: true,
         },
     });
     const total = yield prisma_1.default.vendor.count({
@@ -82,11 +82,16 @@ const getAllVendorsFromDB = (params, options) => __awaiter(void 0, void 0, void 
     };
 });
 // Get a single Vendor from the database
-const getSingleVendorFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
+const getSingleVendorFromDB = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const vendor = yield prisma_1.default.vendor.findUniqueOrThrow({
-        where: { id },
-        include: { user: true,
-            // shop: true 
+        where: { email },
+        include: {
+            user: true,
+            shop: {
+                include: {
+                    products: true,
+                },
+            },
         },
     });
     return vendor;

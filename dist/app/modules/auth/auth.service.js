@@ -42,39 +42,44 @@ const registerUser = (payload) => __awaiter(void 0, void 0, void 0, function* ()
         const user = yield transactionClient.user.create({
             data: Object.assign({}, payload),
         });
-        yield transactionClient.customer.create({
+        const customer = yield transactionClient.customer.create({
             data: {
                 name: user.name,
                 email: user.email,
             },
         });
-        return user;
+        yield transactionClient.customerDashboard.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
+        yield transactionClient.cart.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
+        yield transactionClient.wishlist.create({
+            data: {
+                customerId: customer === null || customer === void 0 ? void 0 : customer.id,
+            },
+        });
+        return customer;
     }));
-    //create token and sent to the  client
-    const jwtPayload = {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        status: newUser.status,
-    };
-    const accessToken = (0, verifyToken_1.createToken)(jwtPayload, config_1.default.jwt_access_secret, config_1.default.jwt_access_expires_in);
-    const refreshToken = (0, verifyToken_1.createToken)(jwtPayload, config_1.default.jwt_refresh_secret, config_1.default.jwt_refresh_expires_in);
-    return {
-        accessToken,
-        refreshToken,
-    };
+    return newUser;
 });
 const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     // checking if the user is exist
-    const user = yield prisma_1.default.user.findUniqueOrThrow({
+    const user = yield prisma_1.default.user.findFirst({
         where: {
             email: payload.email,
         },
     });
+    if (!user) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, "This user is not exist!");
+    }
     // checking if the user is blocked
     const userStatus = user === null || user === void 0 ? void 0 : user.status;
-    if (userStatus === "BLOCKED") {
+    if (userStatus === client_1.UserStatus.BLOCKED) {
         throw new AppError_1.default(http_status_1.default.FORBIDDEN, "This user is blocked!");
     }
     if (!(yield bcryptjs_1.default.compare(payload.password, user.password)))
