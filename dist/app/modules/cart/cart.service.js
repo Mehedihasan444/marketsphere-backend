@@ -16,6 +16,38 @@ exports.CartServices = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
+// Add to cart
+// const addToCart = async (payload: any) => {
+//   const customer = await prisma.customer.findFirstOrThrow({
+//     where: {
+//       email: payload.email,
+//     },
+//   });
+//   const customerId = customer.id;
+//   const getCart = await prisma.cart.findFirstOrThrow({
+//     where: {
+//       customerId,
+//     },
+//   });
+//   const info = {
+//     productId: payload.productId,
+//     cartId: getCart.id,
+//     quantity: payload?.quantity || 1,
+//   };
+//   const isExist = await prisma.cartItem.findFirst({
+//     where: {
+//       productId: payload.productId,
+//       cartId: getCart.id,
+//     },
+//   })
+//   if (isExist) {
+//     throw new AppError(httpStatus.BAD_REQUEST, "Product already in cart");
+//   }
+//   const cart = await prisma.cartItem.create({
+//     data: info,
+//   });
+//   return cart;
+// };
 const addToCart = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const customer = yield prisma_1.default.customer.findFirstOrThrow({
         where: {
@@ -41,6 +73,33 @@ const addToCart = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     });
     if (isExist) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "Product already in cart");
+    }
+    const product = yield prisma_1.default.product.findFirstOrThrow({
+        where: {
+            id: payload.productId,
+        },
+    });
+    const shop = yield prisma_1.default.shop.findFirstOrThrow({
+        where: {
+            id: product.shopId,
+        },
+    });
+    const checkCartItemsVendorSameOrNot = yield prisma_1.default.cartItem.findFirst({
+        where: {
+            cartId: getCart.id,
+        },
+        include: {
+            product: {
+                include: {
+                    shop: true,
+                },
+            },
+        },
+    });
+    if (checkCartItemsVendorSameOrNot) {
+        if (checkCartItemsVendorSameOrNot.product.shop.vendorId !== shop.vendorId) {
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, "You can't add products from different vendors in the same cart.");
+        }
     }
     const cart = yield prisma_1.default.cartItem.create({
         data: info,
