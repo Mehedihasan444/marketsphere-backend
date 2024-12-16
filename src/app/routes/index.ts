@@ -17,6 +17,7 @@ import { BecomeVendorRequestRoutes } from "../modules/becomeVendorRequest/become
 import { DashboardRoutes } from "../modules/DashBoard/dashboard.route";
 import { PaymentRoutes } from "../modules/payment/payment.route";
 import { TransactionRoutes } from "../modules/transaction/transaction.route";
+import { WishlistRoutes } from "../modules/wishlist/wishlist.route";
 
 const router = Router();
 
@@ -93,6 +94,10 @@ const moduleRoutes = [
     path: "/transactions",
     route: TransactionRoutes,
   },
+  {
+    path: "/wishlist",
+    route:WishlistRoutes
+  }
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route as any));

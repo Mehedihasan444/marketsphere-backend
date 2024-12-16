@@ -19,6 +19,7 @@ const sendImageToCloudinary = (imageName, path) => {
         cloudinary_1.v2.uploader.upload(path, { public_id: imageName.trim() }, function (error, result) {
             if (error) {
                 reject(error);
+                return;
             }
             resolve(result);
             // delete a file asynchronously
@@ -34,19 +35,16 @@ const sendImageToCloudinary = (imageName, path) => {
     });
 };
 exports.sendImageToCloudinary = sendImageToCloudinary;
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, process.cwd() + '/uploads/');
-//   },
-//   filename: function (req, file, cb) {
-//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-//     cb(null, file.fieldname + '-' + uniqueSuffix);
-//   },
-// });
 // Ensure uploads directory exists
 const uploadDir = path_1.default.join(config_1.default.NODE_ENV !== "production" ? "/tmp/uploads" : process.cwd(), 'uploads');
-if (!fs_1.default.existsSync(uploadDir)) {
-    fs_1.default.mkdirSync(uploadDir, { recursive: true });
+try {
+    if (!fs_1.default.existsSync(uploadDir)) {
+        fs_1.default.mkdirSync(uploadDir, { recursive: true });
+    }
+}
+catch (error) {
+    console.error('Failed to create uploads directory:', error);
+    throw error; // Stop execution if directory creation fails
 }
 const storage = multer_1.default.diskStorage({
     destination: function (req, file, cb) {

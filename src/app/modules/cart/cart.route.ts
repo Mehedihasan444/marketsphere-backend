@@ -1,8 +1,6 @@
 import express from "express";
 import auth from "../../middlewares/auth";
 import { Role } from "@prisma/client";
-import validateRequest from "../../middlewares/validateRequest";
-import { cartValidationSchema } from "./cart.validation";
 import { CartControllers } from "./cart.controller";
 
 const router = express.Router();

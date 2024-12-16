@@ -19,6 +19,7 @@ const becomeVendorRequest_route_1 = require("../modules/becomeVendorRequest/beco
 const dashboard_route_1 = require("../modules/DashBoard/dashboard.route");
 const payment_route_1 = require("../modules/payment/payment.route");
 const transaction_route_1 = require("../modules/transaction/transaction.route");
+const wishlist_route_1 = require("../modules/wishlist/wishlist.route");
 const router = (0, express_1.Router)();
 const moduleRoutes = [
     {
@@ -93,6 +94,10 @@ const moduleRoutes = [
         path: "/transactions",
         route: transaction_route_1.TransactionRoutes,
     },
+    {
+        path: "/wishlist",
+        route: wishlist_route_1.WishlistRoutes
+    }
 ];
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 exports.default = router;
