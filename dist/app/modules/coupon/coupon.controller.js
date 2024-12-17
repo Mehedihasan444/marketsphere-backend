@@ -16,39 +16,40 @@ exports.CouponControllers = void 0;
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const coupon_services_1 = require("./coupon.services");
+const http_status_1 = __importDefault(require("http-status"));
 const createCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const coupon = yield coupon_services_1.CouponServices.createCoupon(req.body);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupon created Successfully",
         data: coupon,
     });
 }));
 const applyCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const coupon = yield coupon_services_1.CouponServices.applyCoupon(req.body);
+    const coupon = yield coupon_services_1.CouponServices.applyCoupon(req.body, req === null || req === void 0 ? void 0 : req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupon applied Successfully",
         data: coupon,
     });
 }));
 const getAllCoupons = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const coupon = yield coupon_services_1.CouponServices.getAllCoupons();
+    const coupon = yield coupon_services_1.CouponServices.getAllCoupons(req === null || req === void 0 ? void 0 : req.user);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupons retrieved Successfully",
         data: coupon,
     });
 }));
 const getSingleShopCoupons = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { shopId } = req.body;
-    const coupon = yield coupon_services_1.CouponServices.getSingleShopCoupons(shopId);
+    const id = req.params.id;
+    const coupon = yield coupon_services_1.CouponServices.getSingleShopCoupons(id);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupons retrieved Successfully",
         data: coupon,
     });
@@ -57,7 +58,7 @@ const deleteCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     const coupon = yield coupon_services_1.CouponServices.deleteCoupon(req.params.id);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupon deleted Successfully",
         data: coupon,
     });
@@ -66,7 +67,7 @@ const updateCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     const coupon = yield coupon_services_1.CouponServices.updateCoupon(req.params.id, req.body);
     (0, sendResponse_1.default)(res, {
         success: true,
-        statusCode: httpStatus.OK,
+        statusCode: http_status_1.default.OK,
         message: "Coupon updated Successfully",
         data: coupon,
     });

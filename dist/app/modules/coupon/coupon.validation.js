@@ -20,7 +20,7 @@ const createCouponSchema = zod_1.z.object({
         discount: zod_1.z.number({
             required_error: "Discount is required",
         }).min(0, "Discount must be a positive number"),
-        expiryDate: zod_1.z.date({
+        expiryDate: zod_1.z.string({
             required_error: "Expiry date is required",
         }),
     }),
@@ -32,7 +32,7 @@ const updateCouponSchema = zod_1.z.object({
             .number()
             .min(0, "Discount must be a positive number")
             .optional(),
-        expiryDate: zod_1.z.date().optional(),
+        expiryDate: zod_1.z.string().optional(),
         orderId: zod_1.z.string().min(1, "Order ID is required").optional(),
         shopId: zod_1.z.string().optional(),
         isDeleted: zod_1.z.boolean().optional(),

@@ -61,7 +61,7 @@ const paymentConfirmation = (0, catchAsync_1.default)((req, res) => __awaiter(vo
             border-radius: 10px;
           }
           h1 {
-            color: #4CAF50;
+            color: #247bff;
             font-size: 2.5em;
             margin-bottom: 20px;
           }
@@ -71,7 +71,7 @@ const paymentConfirmation = (0, catchAsync_1.default)((req, res) => __awaiter(vo
             margin-bottom: 30px;
           }
           .button {
-            background-color: #4CAF50;
+            background-color: #247bff;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
@@ -80,7 +80,7 @@ const paymentConfirmation = (0, catchAsync_1.default)((req, res) => __awaiter(vo
             transition: background-color 0.3s ease;
           }
           .button:hover {
-            background-color: #45a049;
+            background-color: #1e6ffa;
           }
         </style>
       </head>
@@ -150,7 +150,7 @@ const paymentFailed = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
         <div class="container">
           <h1>Payment Failed</h1>
           <p>We're sorry, but your payment could not be processed. Please try again.</p>
-          <a href="${config_1.default.client_url}/subscription" class="button">Retry Payment</a>
+          <a href="${config_1.default.client_url}/dashboard/customer/orders" class="button">Retry Payment</a>
         </div>
       </body>
     </html>

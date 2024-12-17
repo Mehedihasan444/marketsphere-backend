@@ -18,6 +18,8 @@ import { DashboardRoutes } from "../modules/DashBoard/dashboard.route";
 import { PaymentRoutes } from "../modules/payment/payment.route";
 import { TransactionRoutes } from "../modules/transaction/transaction.route";
 import { WishlistRoutes } from "../modules/wishlist/wishlist.route";
+import path from "path";
+import { RecentViewProductsRoutes } from "../modules/recentViewProducts/recentViewProducts.route";
 
 const router = Router();
 
@@ -97,6 +99,9 @@ const moduleRoutes = [
   {
     path: "/wishlist",
     route:WishlistRoutes
+  },{
+    path: "/recent-view-products",
+    route:RecentViewProductsRoutes
   }
 ];
 

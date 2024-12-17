@@ -23,7 +23,7 @@ const makePayment = (paymentData) => __awaiter(void 0, void 0, void 0, function*
     // amount
     // **
     const transactionId = (0, payment_utils_1.generateTransactionId)();
-    yield prisma_1.default.order.findFirstOrThrow({
+    const res = yield prisma_1.default.order.findFirstOrThrow({
         where: {
             id: orderId
         }

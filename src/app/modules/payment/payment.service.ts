@@ -8,15 +8,16 @@ const makePayment = async (paymentData: any) => {
     // orderId
     // amount
     // **
-
     const transactionId = generateTransactionId();
-    await prisma.order.findFirstOrThrow({
+
+    const res =await prisma.order.findFirstOrThrow({
         where: {
             id: orderId
         }
     })
+
     paymentData.transactionId = transactionId;
-    await prisma.transaction.create({
+  await prisma.transaction.create({
         data: paymentData
     })
     const paymentSession = await initiatePayment(paymentData);

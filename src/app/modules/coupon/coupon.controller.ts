@@ -13,7 +13,7 @@ const createCoupon = catchAsync(async (req, res) => {
   });
 });
 const applyCoupon = catchAsync(async (req, res) => {
-  const coupon = await CouponServices.applyCoupon(req.body);
+  const coupon = await CouponServices.applyCoupon(req.body, req?.user as IAuthUser);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

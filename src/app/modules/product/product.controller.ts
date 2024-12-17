@@ -49,7 +49,6 @@ const getPriorityProducts= catchAsync(async (req, res) => {
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
 
   const user = req?.user;
-  console.log(user)
   const products = await ProductServices.getPriorityProducts(filters, options, user);
 
   sendResponse(res, {

@@ -19,15 +19,15 @@ export const initiatePayment = async (
   paymentData: Transaction,
 
 ) => {
-   
-  const { orderId, amount,transactionId } = paymentData;
 
-const order=await prisma.order.findUniqueOrThrow({
-    where:{
-        id: orderId,
+  const { orderId, amount, transactionId } = paymentData;
+
+  const order = await prisma.order.findFirstOrThrow({
+    where: {
+      id: orderId,
     }
-})
-const {name,email,phone,address,zipCode,city,country,state}=order ||{}
+  })
+  const { name, email, phone, address, zipCode, city, country, state } = order || {}
 
   const response = await axios.post(process.env.PAYMENT_URL!, {
     store_id: process.env.STORE_ID,
@@ -65,55 +65,3 @@ export const verifyPayment = async (transactionId: string) => {
 
   return response.data;
 };
-
-// export const SearchPaymentByUserQueryMaker = async (
-//   query: Record<string, unknown>
-// ) => {
-//   if (query?.searchTerm) {
-//     const userQuery = new QueryBuilder(Payment.find(), query).search(
-//       paymentSearchableFields
-//     );
-
-//     const payments = await userQuery.modelQuery;
-
-//     if (payments && payments.length > 0) {
-//       const userIds = payments.map((payment) => payment.userId);
-
-//       query["userId"] = { $in: userIds };
-//       /**
-//        * query['user'] = {
-//        * $in: [
-//        * ObjectId('5f7b3b3b4f3c7b0b3c7b0b3c'),
-//        * ObjectId('5f7b3b3b4f3c7b0b3c7b0b3c'),
-//        * ]
-//        */
-//       delete query.searchTerm;
-//       return query;
-//     }
-//   }
-// };
-
-// export const SearchPaymentByDateRangeQueryMaker = async (
-//   query: Record<string, unknown>
-// ) => {
-//   if (query?.from || query?.to) {
-//     const dateQuery: Record<string, unknown> = {};
-
-//     if (query.from) {
-//       dateQuery["$gte"] = new Date(query.from as string);
-//     }
-
-//     if (query.to) {
-//       dateQuery["$lte"] = new Date(query.to as string);
-//     }
-
-//     if (Object.keys(dateQuery).length > 0) {
-//       query["dateFound"] = dateQuery;
-//     }
-
-//     delete query.from;
-//     delete query.to;
-//     return query;
-//   }
-//   return query;
-// };

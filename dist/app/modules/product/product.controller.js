@@ -55,7 +55,6 @@ const getPriorityProducts = (0, catchAsync_1.default)((req, res) => __awaiter(vo
     const filters = (0, pick_1.default)(req.query, product_constant_1.ProductFilterableFields);
     const options = (0, pick_1.default)(req.query, ["limit", "page", "sortBy", "sortOrder"]);
     const user = req === null || req === void 0 ? void 0 : req.user;
-    console.log(user);
     const products = yield product_service_1.ProductServices.getPriorityProducts(filters, options, user);
     (0, sendResponse_1.default)(res, {
         success: true,

@@ -17,7 +17,7 @@ router.post(
   auth(Role.CUSTOMER),
   CouponControllers.applyCoupon
 );
-router.get("/", CouponControllers.getAllCoupons);
+router.get("/", auth(Role.VENDOR, Role.ADMIN, Role.SUPER_ADMIN), CouponControllers.getAllCoupons);
 router.get(
   "/:id",
   CouponControllers.getSingleShopCoupons

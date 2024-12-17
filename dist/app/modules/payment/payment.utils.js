@@ -27,7 +27,7 @@ const generateTransactionId = () => {
 exports.generateTransactionId = generateTransactionId;
 const initiatePayment = (paymentData) => __awaiter(void 0, void 0, void 0, function* () {
     const { orderId, amount, transactionId } = paymentData;
-    const order = yield prisma_1.default.order.findUniqueOrThrow({
+    const order = yield prisma_1.default.order.findFirstOrThrow({
         where: {
             id: orderId,
         }
@@ -69,46 +69,3 @@ const verifyPayment = (transactionId) => __awaiter(void 0, void 0, void 0, funct
     return response.data;
 });
 exports.verifyPayment = verifyPayment;
-// export const SearchPaymentByUserQueryMaker = async (
-//   query: Record<string, unknown>
-// ) => {
-//   if (query?.searchTerm) {
-//     const userQuery = new QueryBuilder(Payment.find(), query).search(
-//       paymentSearchableFields
-//     );
-//     const payments = await userQuery.modelQuery;
-//     if (payments && payments.length > 0) {
-//       const userIds = payments.map((payment) => payment.userId);
-//       query["userId"] = { $in: userIds };
-//       /**
-//        * query['user'] = {
-//        * $in: [
-//        * ObjectId('5f7b3b3b4f3c7b0b3c7b0b3c'),
-//        * ObjectId('5f7b3b3b4f3c7b0b3c7b0b3c'),
-//        * ]
-//        */
-//       delete query.searchTerm;
-//       return query;
-//     }
-//   }
-// };
-// export const SearchPaymentByDateRangeQueryMaker = async (
-//   query: Record<string, unknown>
-// ) => {
-//   if (query?.from || query?.to) {
-//     const dateQuery: Record<string, unknown> = {};
-//     if (query.from) {
-//       dateQuery["$gte"] = new Date(query.from as string);
-//     }
-//     if (query.to) {
-//       dateQuery["$lte"] = new Date(query.to as string);
-//     }
-//     if (Object.keys(dateQuery).length > 0) {
-//       query["dateFound"] = dateQuery;
-//     }
-//     delete query.from;
-//     delete query.to;
-//     return query;
-//   }
-//   return query;
-// };

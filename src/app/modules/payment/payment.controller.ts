@@ -8,6 +8,7 @@ import { TransactionStatus } from "@prisma/client";
 
 
 const makePayment = catchAsync(async (req, res) => {
+
     const payment = await paymentService.makePayment(req.body);
    
     sendResponse(res, {
@@ -56,7 +57,7 @@ const paymentConfirmation = catchAsync(async (req, res):Promise<any>=> {
             border-radius: 10px;
           }
           h1 {
-            color: #4CAF50;
+            color: #247bff;
             font-size: 2.5em;
             margin-bottom: 20px;
           }
@@ -66,7 +67,7 @@ const paymentConfirmation = catchAsync(async (req, res):Promise<any>=> {
             margin-bottom: 30px;
           }
           .button {
-            background-color: #4CAF50;
+            background-color: #247bff;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
@@ -75,7 +76,7 @@ const paymentConfirmation = catchAsync(async (req, res):Promise<any>=> {
             transition: background-color 0.3s ease;
           }
           .button:hover {
-            background-color: #45a049;
+            background-color: #1e6ffa;
           }
         </style>
       </head>
@@ -149,7 +150,7 @@ const paymentFailed = catchAsync(async (req, res):Promise<any> => {
         <div class="container">
           <h1>Payment Failed</h1>
           <p>We're sorry, but your payment could not be processed. Please try again.</p>
-          <a href="${config.client_url}/subscription" class="button">Retry Payment</a>
+          <a href="${config.client_url}/dashboard/customer/orders" class="button">Retry Payment</a>
         </div>
       </body>
     </html>

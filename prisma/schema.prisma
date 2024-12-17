@@ -186,10 +186,11 @@ model Product {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  cartItems    CartItem[]
-  orderItems   OrderItem[]
-  reviews      Review?
-  wishlistItem WishlistItem[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  reviews       Review?
+  wishlistItem  WishlistItem[]
+  recentProduct RecentProduct[]
 
   @@map("products")
 }
@@ -429,6 +430,18 @@ model BecomeVendorRequest {
   updatedAt DateTime                  @updatedAt
 
   @@map("becomeVendorRequests")
+}
+
+model RecentProduct {
+  id         String   @id @default(uuid())
+  customerId String
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewedAt   DateTime @default(now())
+
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@map("recentProducts")
 }
 
 enum Role {
