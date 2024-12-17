@@ -22,7 +22,7 @@ router.get(
   "/:id",
   CouponControllers.getSingleShopCoupons
 );
-router.put(
+router.patch(
   "/:id",
   auth(Role.ADMIN, Role.VENDOR),
   validateRequest(CouponValidationSchema.updateCouponSchema),

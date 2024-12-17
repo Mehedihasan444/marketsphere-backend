@@ -41,7 +41,8 @@ export const sendImageToCloudinary = (
 
 // Ensure uploads directory exists
 const uploadDir = path.join(
-  config.NODE_ENV !== "production" ? "/tmp/uploads" : process.cwd(), 'uploads');
+  config.NODE_ENV !== "production" ? "/tmp/uploads" : '/tmp/uploads');
+  // config.NODE_ENV !== "production" ? "/tmp/uploads" : process.cwd(), 'uploads');
 
 try {
   if (!fs.existsSync(uploadDir)) {

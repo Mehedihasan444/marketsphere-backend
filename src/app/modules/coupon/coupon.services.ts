@@ -2,23 +2,32 @@ import { Coupon, CouponItem } from "@prisma/client";
 import prisma from "../../config/prisma";
 import AppError from "../../errors/AppError";
 import httpStatus from "http-status";
+import { IAuthUser } from "../user/user.constant";
 //  Create a coupon
 const createCoupon = async (payload: CouponItem & Coupon) => {
+  const {shopId,...CouponInfo}=payload
+
   const checkShopCoupon = await prisma.coupon.findFirst({
     where: {
-      shopId: payload.shopId,
+      shopId:shopId,
     },
   });
   if (!checkShopCoupon) {
     await prisma.coupon.create({
       data: {
-        shopId: payload.shopId,
+        shopId: shopId,
       },
     });
   }
-
-  const coupon = await prisma.couponItem.create({ data: payload });
-  return coupon;
+const coupon = await prisma.coupon.findFirstOrThrow({
+    where: {
+      shopId: shopId,
+    },
+})
+  CouponInfo.couponId = coupon.id;
+  CouponInfo.expiryDate = new Date(CouponInfo.expiryDate);
+  const result = await prisma.couponItem.create({ data: CouponInfo });
+  return result;
 };
 //  Apply coupon to a user
 const applyCoupon = async (payload: CouponItem) => {
@@ -41,8 +50,21 @@ const applyCoupon = async (payload: CouponItem) => {
   return true;
 };
 //  Get all coupons
-const getAllCoupons = async () => {
-  const coupon = await prisma.coupon.findMany();
+const getAllCoupons = async (user: IAuthUser) => {
+  const vendor = await prisma.vendor.findFirstOrThrow({
+    where: {
+      email: user?.email
+    },
+    include: {
+      shop: true
+    }
+  })
+  const shopIds = vendor.shop?.map((shop) => shop.id)
+  const coupon = await prisma.coupon.findMany({ where: { shopId: { in: shopIds } }, include: { couponItem: {
+    include:{
+      coupon: true
+    }
+  } } });
   return coupon;
 };
 //  Get all coupons of a shop
@@ -56,11 +78,13 @@ const deleteCoupon = async (id: string) => {
   return coupon;
 };
 //  Update a coupon
-const updateCoupon = async (id: string, payload: Partial<Coupon>) => {
-  await prisma.couponItem.findUniqueOrThrow({ where: { id } });
+const updateCoupon = async (id: string, payload: CouponItem&{shopId:string}) => {
+  const {shopId,...updateInfo}=payload
+  updateInfo.expiryDate = new Date(payload.expiryDate);
+  await prisma.couponItem.findFirstOrThrow({ where: { id } });
   const coupon = await prisma.couponItem.update({
     where: { id },
-    data: { ...payload },
+    data: updateInfo,
   });
   return coupon;
 };

@@ -36,7 +36,8 @@ const sendImageToCloudinary = (imageName, path) => {
 };
 exports.sendImageToCloudinary = sendImageToCloudinary;
 // Ensure uploads directory exists
-const uploadDir = path_1.default.join(config_1.default.NODE_ENV !== "production" ? "/tmp/uploads" : process.cwd(), 'uploads');
+const uploadDir = path_1.default.join(config_1.default.NODE_ENV !== "production" ? "/tmp/uploads" : '/tmp/uploads');
+// config.NODE_ENV !== "production" ? "/tmp/uploads" : process.cwd(), 'uploads');
 try {
     if (!fs_1.default.existsSync(uploadDir)) {
         fs_1.default.mkdirSync(uploadDir, { recursive: true });
