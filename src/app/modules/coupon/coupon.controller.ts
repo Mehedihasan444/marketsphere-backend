@@ -31,8 +31,8 @@ const getAllCoupons = catchAsync(async (req, res) => {
   });
 });
 const getSingleShopCoupons = catchAsync(async (req, res) => {
-  const { shopId } = req.body;
-  const coupon = await CouponServices.getSingleShopCoupons(shopId);
+  const id = req.params.id;
+  const coupon = await CouponServices.getSingleShopCoupons(id);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

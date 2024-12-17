@@ -69,7 +69,7 @@ const getAllCoupons = async (user: IAuthUser) => {
 };
 //  Get all coupons of a shop
 const getSingleShopCoupons = async (shopId: string) => {
-  const coupon = await prisma.coupon.findMany({ where: { shopId } });
+  const coupon = await prisma.coupon.findFirst({ where: { shopId }, include: { couponItem: true } });
   return coupon;
 };
 //  Delete a coupon
