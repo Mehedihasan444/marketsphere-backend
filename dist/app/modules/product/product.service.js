@@ -346,12 +346,8 @@ const deleteProductFromDB = (productId) => __awaiter(void 0, void 0, void 0, fun
     const product = yield prisma_1.default.product.findUniqueOrThrow({
         where: { id: productId },
     });
-    if (product.isDeleted) {
-        throw new Error("This product is already marked as deleted.");
-    }
-    const result = yield prisma_1.default.product.update({
+    const result = yield prisma_1.default.product.delete({
         where: { id: productId },
-        data: { isDeleted: true },
     });
     return result;
 });

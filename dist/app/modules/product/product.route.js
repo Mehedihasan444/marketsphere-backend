@@ -15,6 +15,7 @@ const router = express_1.default.Router();
 exports.ProductRoutes = router;
 // Route to create a new product (only accessible by Vendors or Admins)
 router.post("/", (0, auth_1.default)(client_1.Role.VENDOR, client_1.Role.ADMIN), sendImageToCloudinary_1.upload.array("images", 5), (req, res, next) => {
+    console.log(req.body.data);
     req.body = JSON.parse(req.body.data);
     next();
 }, (0, validateRequest_1.default)(product_validation_1.productValidationSchema.createProductValidationSchema), product_controller_1.ProductControllers.createProduct);

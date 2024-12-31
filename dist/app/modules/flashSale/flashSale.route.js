@@ -16,8 +16,12 @@ router.post("/", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR),
     req.body = JSON.parse(req.body.data);
     next();
 }, (0, validateRequest_1.default)(flashSale_validation_1.FlashSaleValidationSchema.createFlashSaleValidationSchema), flashSale_controller_1.FlashSaleControllers.createFlashSale);
-router.post("/add-product", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.addProductToFlashSale);
 router.get("/", flashSale_controller_1.FlashSaleControllers.getAllFlashSales);
-router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), (0, validateRequest_1.default)(flashSale_validation_1.FlashSaleValidationSchema.updateFlashSaleValidationSchema), flashSale_controller_1.FlashSaleControllers.getSingleFlashSale);
-router.delete("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.deleteFlashSale);
+router.post("/add-product", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.addProductToFlashSale);
+router.get("/vendor/products", (0, auth_1.default)(client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.getVendorProductsInFlashSale);
+router.get("/products", flashSale_controller_1.FlashSaleControllers.getProductsInFlashSale);
+router.delete("/delete-product/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.deleteProductToFlashSale);
+router.get("/:id", flashSale_controller_1.FlashSaleControllers.getSingleFlashSale);
+router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN), (0, validateRequest_1.default)(flashSale_validation_1.FlashSaleValidationSchema.updateFlashSaleValidationSchema), flashSale_controller_1.FlashSaleControllers.updateFlashSale);
+router.delete("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN), flashSale_controller_1.FlashSaleControllers.deleteFlashSale);
 exports.FlashSaleRoutes = router;

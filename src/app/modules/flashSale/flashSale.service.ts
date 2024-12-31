@@ -69,7 +69,6 @@ const updateFlashSale = async (id: string, data: FlashSale) => {
   return flashSale;
 }
 const deleteFlashSale = async (id: string) => {
-  console.log(id)
   await prisma.flashSale.findUniqueOrThrow({ where: { id } });
   const flashSale = await prisma.flashSale.delete({ where: { id } });
   return flashSale;
@@ -108,7 +107,6 @@ const getVendorProductsInFlashSale = async (user: IAuthUser) => {
       product: true,
     },
   });
-  console.log(result)
   return result;
 }
 
