@@ -16,6 +16,7 @@ router.post("/", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR),
     req.body = JSON.parse(req.body.data);
     next();
 }, (0, validateRequest_1.default)(flashSale_validation_1.FlashSaleValidationSchema.createFlashSaleValidationSchema), flashSale_controller_1.FlashSaleControllers.createFlashSale);
+router.post("/add-product", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.addProductToFlashSale);
 router.get("/", flashSale_controller_1.FlashSaleControllers.getAllFlashSales);
 router.put("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), (0, validateRequest_1.default)(flashSale_validation_1.FlashSaleValidationSchema.updateFlashSaleValidationSchema), flashSale_controller_1.FlashSaleControllers.getSingleFlashSale);
 router.delete("/:id", (0, auth_1.default)(client_1.Role.ADMIN, client_1.Role.VENDOR), flashSale_controller_1.FlashSaleControllers.deleteFlashSale);

@@ -12,11 +12,6 @@ const createFlashSaleValidationSchema = z.object({
         required_error: "Description is required",
       })
       .nonempty(),
-    discount: z
-      .number({
-        required_error: "Discount is required",
-      })
-      .int(),
     startDateTime: z
       .string({
         required_error: "Start Date Time is required",
@@ -31,14 +26,13 @@ const createFlashSaleValidationSchema = z.object({
       .string({
         required_error: "Image is required",
       })
-      .nonempty(),
+      .nonempty().optional(),
   }),
 });
 const updateFlashSaleValidationSchema = z.object({
   body: z.object({
     name: z.string().nonempty().optional(),
     description: z.string().nonempty().optional(),
-    discount: z.number().int().optional(),
     startDateTime: z.string().nonempty().optional(),
     endDateTime: z.string().nonempty().optional(),
     image: z.string().nonempty().optional(),

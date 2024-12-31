@@ -12,23 +12,31 @@ router.post(
   "/",
   auth(Role.ADMIN, Role.VENDOR),
   upload.single("image"),
-  (req:Request, res:Response, next:NextFunction) => {
+  (req: Request, res: Response, next: NextFunction) => {
     req.body = JSON.parse(req.body.data);
     next();
   },
   validateRequest(FlashSaleValidationSchema.createFlashSaleValidationSchema),
   FlashSaleControllers.createFlashSale
 );
+
 router.get("/", FlashSaleControllers.getAllFlashSales);
+
+router.post("/add-product", auth(Role.ADMIN, Role.SUPER_ADMIN, Role.VENDOR), FlashSaleControllers.addProductToFlashSale);
+router.get("/vendor/products", auth(Role.VENDOR), FlashSaleControllers.getVendorProductsInFlashSale);
+router.get("/products", FlashSaleControllers.getProductsInFlashSale);
+
+router.delete("/delete-product/:id", auth(Role.ADMIN, Role.SUPER_ADMIN, Role.VENDOR), FlashSaleControllers.deleteProductToFlashSale);
+router.get("/:id", FlashSaleControllers.getSingleFlashSale);
 router.put(
   "/:id",
-  auth(Role.ADMIN, Role.VENDOR),
+  auth(Role.ADMIN, Role.SUPER_ADMIN),
   validateRequest(FlashSaleValidationSchema.updateFlashSaleValidationSchema),
-  FlashSaleControllers.getSingleFlashSale
+  FlashSaleControllers.updateFlashSale
 );
 router.delete(
   "/:id",
-  auth(Role.ADMIN, Role.VENDOR),
+  auth(Role.ADMIN, Role.SUPER_ADMIN),
   FlashSaleControllers.deleteFlashSale
 );
 

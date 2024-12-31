@@ -179,7 +179,6 @@ CREATE TABLE "products" (
     "size" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "features" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "categoryId" TEXT NOT NULL,
-    "flashSaleId" TEXT,
     "shopId" TEXT NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -284,6 +283,7 @@ CREATE TABLE "orders" (
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isReview" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "orders_pkey" PRIMARY KEY ("id")
 );
@@ -331,7 +331,6 @@ CREATE TABLE "flashSales" (
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "image" TEXT NOT NULL,
-    "discount" DOUBLE PRECISION NOT NULL,
     "startDateTime" TIMESTAMP(3) NOT NULL,
     "endDateTime" TIMESTAMP(3) NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
@@ -339,6 +338,18 @@ CREATE TABLE "flashSales" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "flashSales_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "flashSaleItems" (
+    "id" TEXT NOT NULL,
+    "flashSaleId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "discount" DOUBLE PRECISION NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "flashSaleItems_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -384,6 +395,16 @@ CREATE TABLE "becomeVendorRequests" (
     CONSTRAINT "becomeVendorRequests_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "recentProducts" (
+    "id" TEXT NOT NULL,
+    "customerId" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "viewedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "recentProducts_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -414,6 +435,12 @@ CREATE UNIQUE INDEX "couponItems_code_key" ON "couponItems"("code");
 -- CreateIndex
 CREATE UNIQUE INDEX "reviews_productId_key" ON "reviews"("productId");
 
+-- CreateIndex
+CREATE INDEX "recentProducts_customerId_idx" ON "recentProducts"("customerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "recentProducts_customerId_productId_key" ON "recentProducts"("customerId", "productId");
+
 -- AddForeignKey
 ALTER TABLE "admins" ADD CONSTRAINT "admins_email_fkey" FOREIGN KEY ("email") REFERENCES "users"("email") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -437,9 +464,6 @@ ALTER TABLE "shops" ADD CONSTRAINT "shops_vendorId_fkey" FOREIGN KEY ("vendorId"
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_flashSaleId_fkey" FOREIGN KEY ("flashSaleId") REFERENCES "flashSales"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_shopId_fkey" FOREIGN KEY ("shopId") REFERENCES "shops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -496,6 +520,12 @@ ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_couponId_fkey" FOREIGN KEY
 ALTER TABLE "couponItems" ADD CONSTRAINT "couponItems_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "flashSaleItems" ADD CONSTRAINT "flashSaleItems_flashSaleId_fkey" FOREIGN KEY ("flashSaleId") REFERENCES "flashSales"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "flashSaleItems" ADD CONSTRAINT "flashSaleItems_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -506,3 +536,6 @@ ALTER TABLE "reviewItems" ADD CONSTRAINT "reviewItems_reviewId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "reviewItems" ADD CONSTRAINT "reviewItems_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "recentProducts" ADD CONSTRAINT "recentProducts_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;

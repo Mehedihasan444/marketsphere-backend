@@ -16,6 +16,7 @@ router.post(
   auth(Role.VENDOR, Role.ADMIN),
   upload.array("images", 5),
   (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body.data)
     req.body = JSON.parse(req.body.data);
     next();
   },

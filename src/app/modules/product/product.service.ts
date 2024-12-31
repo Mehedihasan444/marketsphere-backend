@@ -4,6 +4,7 @@ import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createProduct = async (files: any, payload: Product) => {
+ 
   if (files) {
     const images = files;
     const imageUrls = await Promise.all(
@@ -364,13 +365,10 @@ const deleteProductFromDB = async (productId: string) => {
     where: { id: productId },
   });
 
-  if (product.isDeleted) {
-    throw new Error("This product is already marked as deleted.");
-  }
+  
 
-  const result = await prisma.product.update({
+  const result = await prisma.product.delete({
     where: { id: productId },
-    data: { isDeleted: true },
   });
   return result;
 };

@@ -27,6 +27,16 @@ const createFlashSale = (0, catchAsync_1.default)((req, res) => __awaiter(void 0
         data: flashSale,
     });
 }));
+const addProductToFlashSale = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body;
+    const flashSale = yield flashSale_service_1.FlashSaleServices.addProductToFlashSale(data);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "Product added to FlashSale Successfully",
+        data: flashSale,
+    });
+}));
 const getAllFlashSales = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const flashSale = yield flashSale_service_1.FlashSaleServices.getAllFlashSales();
     (0, sendResponse_1.default)(res, {
@@ -60,5 +70,6 @@ exports.FlashSaleControllers = {
     createFlashSale,
     getAllFlashSales,
     getSingleFlashSale,
-    deleteFlashSale
+    deleteFlashSale,
+    addProductToFlashSale
 };

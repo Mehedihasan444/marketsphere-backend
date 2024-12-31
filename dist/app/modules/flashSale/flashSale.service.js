@@ -23,6 +23,22 @@ const createFlashSale = (file, payload) => __awaiter(void 0, void 0, void 0, fun
     const flashSale = yield prisma_1.default.flashSale.create({ data: payload });
     return flashSale;
 });
+const addProductToFlashSale = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    const flashSale = yield prisma_1.default.flashSale.findUniqueOrThrow({
+        where: { id: data.flashSaleId },
+    });
+    const product = yield prisma_1.default.product.findUniqueOrThrow({
+        where: { id: data.productId },
+    });
+    yield prisma_1.default.flashSaleItem.create({
+        data: {
+            flashSaleId: flashSale.id,
+            productId: product.id,
+            discount: data.discount,
+        },
+    });
+    return flashSale;
+});
 const getAllFlashSales = () => __awaiter(void 0, void 0, void 0, function* () {
     const flashSales = yield prisma_1.default.flashSale.findMany();
     return flashSales;
@@ -40,4 +56,5 @@ exports.FlashSaleServices = {
     getAllFlashSales,
     getSingleFlashSale,
     deleteFlashSale,
+    addProductToFlashSale
 };
