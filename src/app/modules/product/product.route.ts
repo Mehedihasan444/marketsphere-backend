@@ -36,6 +36,13 @@ router.get("/priority", auth(Role.CUSTOMER, Role.ADMIN, Role.SUPER_ADMIN, Role.V
 router.put(
   "/:id",
   auth(Role.VENDOR, Role.ADMIN),
+  upload.array("images", 5),
+  (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.data) {
+      req.body = JSON.parse(req.body.data);
+    }
+    next();
+  },
   validateRequest(productValidationSchema.updateProductValidationSchema),
   ProductControllers.updateProduct
 );
