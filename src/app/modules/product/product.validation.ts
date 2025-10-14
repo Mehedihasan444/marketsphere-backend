@@ -21,6 +21,10 @@ export const createProductSchema = z.object({
       .nonnegative("Quantity cannot be negative."),
     categoryId: z.string(),
     shopId: z.string(),
+    brand: z.string().optional(),
+    color: z.array(z.string()).optional(),
+    size: z.array(z.string()).optional(),
+    features: z.array(z.string()).optional(),
   }),
 });
 
@@ -48,6 +52,10 @@ export const updateProductSchema = z.object({
       .optional(),
     categoryId: z.string().uuid("Invalid category ID.").optional(),
     shopId: z.string().uuid("Invalid shop ID.").optional(),
+    brand: z.string().optional(),
+    color: z.array(z.string()).optional(),
+    size: z.array(z.string()).optional(),
+    features: z.array(z.string()).optional(),
   }),
 });
 
