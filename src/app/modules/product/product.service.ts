@@ -375,11 +375,29 @@ const deleteProductFromDB = async (productId: string) => {
 
 const updateProduct = async (
   productId: string,
+  files: any,
   payload: Prisma.ProductUpdateInput
 ) => {
   const product = await prisma.product.findUniqueOrThrow({
     where: { id: productId },
   });
+
+  // If new images are uploaded, process them and merge with existing images
+  if (files && files.length > 0) {
+    const images = files;
+    const newImageUrls = await Promise.all(
+      images?.map(async (image: any) => {
+        const imageName = image?.originalname;
+        const path = image?.path;
+        const { secure_url } = await sendImageToCloudinary(imageName, path);
+        return secure_url as string;
+      })
+    );
+    
+    // Merge existing images with new images (keep existing images first)
+    const existingImages = product.images || [];
+    payload.images = [...existingImages, ...newImageUrls];
+  }
 
   const result = await prisma.product.update({
     where: { id: productId },
