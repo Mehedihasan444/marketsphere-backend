@@ -82,7 +82,7 @@ const deleteProduct = catchAsync(async (req, res) => {
 });
 
 const updateProduct = catchAsync(async (req, res) => {
-  const result = await ProductServices.updateProduct(req.params.id, req.body);
+  const result = await ProductServices.updateProduct(req.params.id, req.files, req.body);
 
   sendResponse(res, {
     success: true,
