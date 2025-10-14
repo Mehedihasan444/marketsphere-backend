@@ -7,15 +7,14 @@ import { Role, UserStatus } from '@prisma/client';
 
 export const createToken = (
   jwtPayload: {
-    _id?: string;
+    id: string;
     name: string;
     email: string;
-    mobileNumber?: string;
     role: Role;
     status: UserStatus;
   },
   secret: string,
-  expiresIn: string
+  expiresIn: any
 ) => {
   return jwt.sign(jwtPayload, secret, {
     expiresIn,
@@ -25,10 +24,13 @@ export const createToken = (
 export const verifyToken = (
   token: string,
   secret: string
-): JwtPayload | Error => {
+): JwtPayload => {
   try {
     return jwt.verify(token, secret) as JwtPayload;
   } catch (error: any) {
-    throw new AppError(401, 'You are not authorized!');
+    if (error.name === 'TokenExpiredError') {
+      throw new AppError(401, 'JWT expired');
+    }
+    throw new AppError(401, 'Invalid token');
   }
 };
