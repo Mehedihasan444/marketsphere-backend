@@ -49,6 +49,15 @@ const getAllCategoriesFromDB = async (params: any, options: any) => {
     where: whereConditions,
     skip,
     take: limit,
+    include: {
+      parent: true,
+      children: true,
+      products: {
+        select: {
+          id: true,
+        }
+      }
+    },
     orderBy:
       options.sortBy && options.sortOrder
         ? {
