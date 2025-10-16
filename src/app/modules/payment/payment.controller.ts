@@ -49,7 +49,7 @@ const paymentConfirmation = catchAsync(async (req, res):Promise<any>=> {
             margin: 0;
             background-color: #f4f4f9;
           }
-          .container {
+          .max-w-7xl {
             text-align: center;
             padding: 50px;
             background: #ffffff;
@@ -81,7 +81,7 @@ const paymentConfirmation = catchAsync(async (req, res):Promise<any>=> {
         </style>
       </head>
       <body>
-        <div class="container">
+        <div class="max-w-7xl">
           <h1>Payment Success</h1>
           <p>Thank you for your payment! Your transaction has been successfully completed.</p>
           <a href="${config.client_url}" class="button">Go to Home</a>
@@ -115,7 +115,7 @@ const paymentFailed = catchAsync(async (req, res):Promise<any> => {
             margin: 0;
             background-color: #f4f4f9;
           }
-          .container {
+          .max-w-7xl {
             text-align: center;
             padding: 50px;
             background: #ffffff;
@@ -147,7 +147,7 @@ const paymentFailed = catchAsync(async (req, res):Promise<any> => {
         </style>
       </head>
       <body>
-        <div class="container">
+        <div class="max-w-7xl">
           <h1>Payment Failed</h1>
           <p>We're sorry, but your payment could not be processed. Please try again.</p>
           <a href="${config.client_url}/dashboard/customer/orders" class="button">Retry Payment</a>

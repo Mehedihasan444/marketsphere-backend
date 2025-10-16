@@ -26,7 +26,16 @@ router.post(
 // Route to get all categories (publicly accessible)
 router.get("/", CategoryControllers.getAllCategories);
 
-// Route to get a single category (publicly accessible)
+// Route to get category statistics (publicly accessible)
+router.get("/stats/overview", CategoryControllers.getCategoryStats);
+
+// Route to get products by category slug (publicly accessible)
+router.get("/slug/:slug/products", CategoryControllers.getProductsByCategorySlug);
+
+// Route to get a single category by slug (publicly accessible)
+router.get("/slug/:slug", CategoryControllers.getCategoryBySlug);
+
+// Route to get a single category by ID (publicly accessible)
 router.get("/:id", CategoryControllers.getSingleCategory);
 
 // Route to update a category (only accessible by Admins)

@@ -65,10 +65,60 @@ const updateCategory = catchAsync(async (req, res) => {
   });
 });
 
+const getCategoryBySlug = catchAsync(async (req, res) => {
+  const category = await CategoryServices.getCategoryBySlug(req.params.slug);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Category Retrieved Successfully",
+    data: category,
+  });
+});
+
+const getProductsByCategorySlug = catchAsync(async (req, res) => {
+  const filters = pick(req.query, [
+    'searchTerm', 
+    'minPrice', 
+    'maxPrice', 
+    'brand', 
+    'rating', 
+    'sortBy'
+  ]);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const result = await CategoryServices.getProductsByCategorySlug(
+    req.params.slug,
+    filters,
+    options
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Products Retrieved Successfully",
+    data: result,
+  });
+});
+
+const getCategoryStats = catchAsync(async (req, res) => {
+  const stats = await CategoryServices.getCategoryStats();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Category Statistics Retrieved Successfully",
+    data: stats,
+  });
+});
+
 export const CategoryControllers = {
   createCategory,
   getAllCategories,
   getSingleCategory,
   deleteCategory,
   updateCategory,
+  getCategoryBySlug,
+  getProductsByCategorySlug,
+  getCategoryStats,
 };
