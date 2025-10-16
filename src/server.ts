@@ -2,6 +2,7 @@ import { Server } from "http";
 import app from "./app";
 import config from "./app/config";
 import { seed } from "./app/utils/seeding";
+import { seedNestedCategories } from "./utils/seed-nested-categories";
 
 async function main() {
   const server: Server = app.listen(config.port, async () => {
@@ -10,6 +11,8 @@ async function main() {
     try {
       await seed();
       console.log("Database seeding completed!");
+      await seedNestedCategories();
+      console.log("Nested categories seeding completed!");
     } catch (error) {
       console.error("Database seeding failed:", error);
     }
