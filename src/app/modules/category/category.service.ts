@@ -52,9 +52,9 @@ const getAllCategoriesFromDB = async (params: any, options: any) => {
     include: {
       parent: true,
       children: true,
-      products: {
+      _count: {
         select: {
-          id: true,
+          products: true,
         }
       }
     },
@@ -140,12 +140,9 @@ const getCategoryBySlug = async (slug: string) => {
       }
     },
     include: {
-      products: {
-        where: {
-          isDeleted: false,
-        },
+      _count: {
         select: {
-          id: true,
+          products: true,
         }
       }
     }
@@ -157,7 +154,7 @@ const getCategoryBySlug = async (slug: string) => {
 
   return {
     ...category,
-    productCount: category.products.length,
+    productCount: category._count.products,
     slug: category.name.toLowerCase().replace(/\s+/g, '-'),
   };
 };
