@@ -26,7 +26,7 @@ router.get(
 // Route to get all reviews (publicly accessible)
 router.get(
   "/product/:id",
-  auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
+  // auth(Role.ADMIN, Role.CUSTOMER, Role.VENDOR),
   ReviewControllers.getProductReviews
 );
 
