@@ -1,3 +1,4 @@
+import { is } from './../../../../node_modules/effect/src/Match';
 import { z } from "zod";
 
 // Validation schema for `Product` creation
@@ -23,6 +24,8 @@ export const createProductSchema = z.object({
     shopId: z.string(),
     brand: z.string().optional(),
     color: z.array(z.string()).optional(),
+    isFeatured: z.boolean().optional(),
+    soldCount: z.number().int().nonnegative().optional(),
     size: z.array(z.string()).optional(),
     features: z.array(z.string()).optional(),
   }),
@@ -53,6 +56,8 @@ export const updateProductSchema = z.object({
     categoryId: z.string().uuid("Invalid category ID.").optional(),
     shopId: z.string().uuid("Invalid shop ID.").optional(),
     brand: z.string().optional(),
+    isFeatured: z.boolean().optional(),
+    soldCount: z.number().int().nonnegative().optional(),
     color: z.array(z.string()).optional(),
     size: z.array(z.string()).optional(),
     features: z.array(z.string()).optional(),

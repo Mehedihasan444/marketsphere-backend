@@ -27,6 +27,10 @@ router.post(
 // Route to get all products (publicly accessible)
 router.get("/", ProductControllers.getAllProducts);
 
+// Route to get trending products
+router.get("/trending", ProductControllers.getTrendingProducts);
+// Route to get featured products
+router.get("/featured", ProductControllers.getFeaturedProducts);
 // Route to get all vendor products (publicly accessible)
 router.get("/vendor", auth(Role.VENDOR), ProductControllers.getAllVendorProducts);
 

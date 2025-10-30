@@ -1,10 +1,11 @@
+import { is } from './../../../../node_modules/effect/src/Match';
 import { Prisma, Product, Role } from "@prisma/client";
 import prisma from "../../config/prisma";
 import { paginationHelper } from "../../utils/paginationHelper";
 import { sendImageToCloudinary } from "../../utils/sendImageToCloudinary";
 
 const createProduct = async (files: any, payload: Product) => {
- 
+
   if (files) {
     const images = files;
     const imageUrls = await Promise.all(
@@ -108,6 +109,89 @@ const getAllProductsFromDB = async (params: any, options: any) => {
   };
 };
 
+const getTrendingProductsFromDB = async (params: any, options: any, user: any) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const result = await prisma.product.findMany({
+    where: {
+      isDeleted: false,
+      quantity: { gt: 0 }
+    },
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+          [options.sortBy]: options.sortOrder,
+        }
+        : {
+          soldCount: "desc",
+        },
+    include: {
+      category: true,
+      shop: true,
+      cartItems: true,
+      orderItems: true,
+      reviews: true,
+    },
+  });
+  const total = await prisma.product.count({
+    where: {
+      isDeleted: false,
+      quantity: { gt: 0 }
+    },
+  });
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
+
+const getFeaturedProductsFromDB = async (params: any, options: any, user: any) => {
+  const { page, limit, skip } = paginationHelper.calculatePagination(options);
+  const result = await prisma.product.findMany({
+    where: {
+      isDeleted: false,
+      quantity: { gt: 0 },
+      isFeatured: true
+    },
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+          [options.sortBy]: options.sortOrder,
+        }
+        : {
+          createdAt: "desc",
+        },
+    include: {
+      category: true,
+      shop: true,
+      cartItems: true,
+      orderItems: true,
+      reviews: true,
+    },
+  });
+  const total = await prisma.product.count({
+    where: {
+      isDeleted: false,
+      quantity: { gt: 0 },
+      isFeatured: true
+    },
+  });
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
 const getAllVendorProducts = async (params: any, options: any, user: any) => {
   // Calculate pagination details
   const { page, limit, skip } = paginationHelper.calculatePagination(options);
@@ -312,11 +396,11 @@ const getPriorityProducts = async (params: any, options: any, user: any) => {
       orderBy:
         options.sortBy && options.sortOrder
           ? {
-              [options.sortBy]: options.sortOrder,
-            }
+            [options.sortBy]: options.sortOrder,
+          }
           : {
-              createdAt: "desc",
-            },
+            createdAt: "desc",
+          },
       include: {
         category: true,
         shop: true,
@@ -365,7 +449,7 @@ const deleteProductFromDB = async (productId: string) => {
     where: { id: productId },
   });
 
-  
+
 
   const result = await prisma.product.delete({
     where: { id: productId },
@@ -393,7 +477,7 @@ const updateProduct = async (
         return secure_url as string;
       })
     );
-    
+
     // Merge existing images with new images (keep existing images first)
     const existingImages = product.images || [];
     payload.images = [...existingImages, ...newImageUrls];
@@ -409,6 +493,8 @@ const updateProduct = async (
 export const ProductServices = {
   createProduct,
   getAllProductsFromDB,
+  getTrendingProductsFromDB,
+  getFeaturedProductsFromDB,
   getSingleProductFromDB,
   deleteProductFromDB,
   updateProduct,

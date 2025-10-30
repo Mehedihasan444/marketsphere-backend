@@ -1,3 +1,4 @@
+import { get } from "http";
 import catchAsync from "../../utils/catchAsync";
 import pick from "../../utils/pick";
 import sendResponse from "../../utils/sendResponse";
@@ -30,6 +31,22 @@ const getAllProducts = catchAsync(async (req, res) => {
     data: products,
   });
 });
+
+const getTrendingProducts = catchAsync(async (req, res) => {
+    const filters = pick(req.query, ProductFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const products = await ProductServices.getTrendingProductsFromDB(
+filters, options,req.user
+  );
+  
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Trending Products Retrieved Successfully",
+    data: products,
+  });
+});
 const getAllVendorProducts = catchAsync(async (req, res) => {
   const filters = pick(req.query, ProductFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
@@ -41,6 +58,22 @@ const getAllVendorProducts = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: "Products Retrieved Successfully",
+    data: products,
+  });
+});
+
+const getFeaturedProducts = catchAsync(async (req, res) => {
+    const filters = pick(req.query, ProductFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const products = await ProductServices.getFeaturedProductsFromDB(
+filters, options,req.user
+  );
+  
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Featured Products Retrieved Successfully",
     data: products,
   });
 });
@@ -95,6 +128,8 @@ const updateProduct = catchAsync(async (req, res) => {
 export const ProductControllers = {
   createProduct,
   getAllProducts,
+  getTrendingProducts,
+  getFeaturedProducts,
   getSingleProduct,
   deleteProduct,
   updateProduct,

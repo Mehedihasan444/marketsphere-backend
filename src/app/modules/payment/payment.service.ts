@@ -10,14 +10,14 @@ const makePayment = async (paymentData: any) => {
     // **
     const transactionId = generateTransactionId();
 
-    const res =await prisma.order.findFirstOrThrow({
+    const res = await prisma.order.findFirstOrThrow({
         where: {
             id: orderId
         }
     })
 
     paymentData.transactionId = transactionId;
-  await prisma.transaction.create({
+    await prisma.transaction.create({
         data: paymentData
     })
     const paymentSession = await initiatePayment(paymentData);
@@ -46,6 +46,25 @@ const paymentConfirmation = async ({ transactionId, orderId, }: { transactionId:
             }
 
             );
+            const orderItems = await tx.orderItem.findMany({
+                where: {
+                    orderId: orderId
+                }
+            })
+
+            for (const item of orderItems) {
+                await tx.product.update({
+                    where: {
+                        id: item.productId
+                    },
+                    data: {
+                        soldCount: {
+                            increment: item.quantity
+                        }
+                    }
+                })
+            }
+
             return transaction;
         })
         return payment;
