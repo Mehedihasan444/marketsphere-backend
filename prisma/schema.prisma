@@ -188,13 +188,14 @@ model Product {
   updatedAt         DateTime  @updatedAt
   brand             String?
   model             String?
+  isFeatured       Boolean   @default(false)
   warrantyDuration  Int? // Duration in months
   warrantyStartDate DateTime? // When warranty begins
   warrantyEndDate   DateTime? // When warranty expires
   warrantyTerms     String? // Detailed warranty terms
   warrantyStatus    String? // "Active", "Expired", "Pending"
   warrantyNumber    String?
-
+  soldCount         Int       @default(0)
   cartItems      CartItem[]
   orderItems     OrderItem[]
   reviews        Review?
