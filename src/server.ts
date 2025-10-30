@@ -1,8 +1,9 @@
 import { Server } from "http";
 import app from "./app";
 import config from "./app/config";
-import { seed } from "./app/utils/seeding";
+// import { seed } from "./app/utils/seeding";
 import { seedNestedCategories } from "./utils/seed-nested-categories";
+import { seed } from "./app/utils/seeding";
 
 async function main() {
   const server: Server = app.listen(config.port, async () => {
