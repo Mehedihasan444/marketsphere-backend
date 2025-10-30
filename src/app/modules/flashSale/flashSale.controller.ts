@@ -1,4 +1,5 @@
 import catchAsync from "../../utils/catchAsync";
+import pick from "../../utils/pick";
 import sendResponse from "../../utils/sendResponse";
 import { IAuthUser } from "../user/user.constant";
 import { FlashSaleServices } from "./flashSale.service";
@@ -88,7 +89,18 @@ const getVendorProductsInFlashSale = catchAsync(async (req, res) => {
   });
 });
 const getProductsInFlashSale = catchAsync(async (req, res) => {
-  const products = await FlashSaleServices.getProductsInFlashSale();
+  console.log(req.query)
+    const filters = pick(req.query, [
+    'searchTerm', 
+    'minPrice', 
+    'maxPrice', 
+    'brand', 
+    'rating', 
+    'sortBy'
+  ]);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+
+  const products = await FlashSaleServices.getProductsInFlashSale(filters, options);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
